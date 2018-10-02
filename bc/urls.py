@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls')),
 
     url(r'^datastored',views.DataStored),
+    url(r'^Images/$',views.getImageData, name='Images'),
     url(r'^',index),
 
 

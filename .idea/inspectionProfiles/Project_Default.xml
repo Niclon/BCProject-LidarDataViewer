@@ -95,6 +95,13 @@
       <option name="m_limit" value="5" />
     </inspection_tool>
     <inspection_tool class="PlatformDetectionJS" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="streetViewer.views.globalCounter" />
+        </list>
+      </option>
+    </inspection_tool>
     <inspection_tool class="ReplaceAssignmentWithOperatorAssignmentJS" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ReuseOfLocalVariableJS" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="StandardJS" enabled="true" level="ERROR" enabled_by_default="true" />

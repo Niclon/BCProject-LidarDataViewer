@@ -34,5 +34,14 @@
     "ghpages": "0.0.3",
     "uglify-js-brunch": "^2",
     "webpack-bundle-tracker": "^0.3.0"
-  }
+  },
+  "plugins": [
+    [
+      "transform-react-jsx",
+      {
+        "pragma": "h"
+      }
+    ]
+  ]
+
 }

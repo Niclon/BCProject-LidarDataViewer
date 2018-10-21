@@ -135825,11 +135825,11 @@ var groupOfCameras = new THREE.Group();
 var material = new THREE.LineBasicMaterial({ color: 0xff00ff, linewidth: 2 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    (0, _preact.render)(h(_main2.default, null), document.querySelector('#app'));
+    (0, _preact.render)((0, _preact.h)(_main2.default, null), document.querySelector('#app'));
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    (0, _preact.render)(h(_lidarPoints2.default, { stepNumber: 0 }), document.querySelector('#lidarPoints'));
+    (0, _preact.render)((0, _preact.h)(_lidarPoints2.default, {stepNumber: 0}), document.querySelector('#lidarPoints'));
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -135858,7 +135858,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     stepNumber.onChange(function (value) {
-        (0, _preact.render)(h(_lidarPoints2.default, { stepNumber: value }), document.querySelector('#lidarPoints'));
+        (0, _preact.render)((0, _preact.h)(_lidarPoints2.default, {stepNumber: value}), document.querySelector('#lidarPoints'));
     });
 
     var customContainer = document.querySelector('#my-gui-container');
@@ -135890,6 +135890,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         if (e.shiftKey) {
+            document.querySelector('#drawingCanvas').setAttribute('visible', 'false');
             if (isFrameStopped) {
                 if (groupOfPoints.children.length == 2) {
                     makeBorder();
@@ -135942,6 +135943,62 @@ document.addEventListener('DOMContentLoaded', function () {
             // scene.add(sphere);
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var clickX = new Array();
+        var clickY = new Array();
+        var clickDrag = new Array();
+        var paint;
+        var context = document.getElementById('canvasInAPerfectWorld').getContext("2d");
+        var drawingCanvas = document.querySelector('#drawingCanvas');
+        drawingCanvas.mousedown(function (e) {
+            var mouseX = e.pageX - this.offsetLeft;
+            var mouseY = e.pageY - this.offsetTop;
+
+            paint = true;
+            addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+            redraw();
+        });
+        drawingCanvas.mousemove(function (e) {
+            if (paint) {
+                addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+                redraw();
+            }
+        });
+        drawingCanvas.mouseup(function (e) {
+            paint = false;
+        });
+        drawingCanvas.mouseleave(function (e) {
+            paint = false;
+        });
+
+        function addClick(x, y, dragging) {
+            clickX.push(x);
+            clickY.push(y);
+            clickDrag.push(dragging);
+        }
+
+        function redraw() {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+
+            context.strokeStyle = "#df4b26";
+            context.lineJoin = "round";
+            context.lineWidth = 5;
+
+            for (var i = 0; i < clickX.length; i++) {
+                context.beginPath();
+                if (clickDrag[i] && i) {
+                    context.moveTo(clickX[i - 1], clickY[i - 1]);
+                } else {
+                    context.moveTo(clickX[i] - 1, clickY[i]);
+                }
+                context.lineTo(clickX[i], clickY[i]);
+                context.closePath();
+                context.stroke();
+            }
+        }
+    });
 
     // }
     // function setUpDrawing() {
@@ -136419,16 +136476,16 @@ var Main = function (_Component) {
         key: 'render',
         value: function render() {
 
-            return h(
+            return (0, _preact.h)(
                 _aframeReact.Scene,
                 { 'vr-mode-ui': 'enabled: false' },
-                h(
+                (0, _preact.h)(
                     'a-assets',
                     null,
-                    h('img', { crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg' }),
-                    h('img', { crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg' })
+                    (0, _preact.h)('img', {crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg'}),
+                    (0, _preact.h)('img', {crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg'})
                 ),
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-sky',
                     height: '2048',
                     radius: '30',
@@ -136436,31 +136493,35 @@ var Main = function (_Component) {
                     'theta-length': '90',
                     width: '2048'
                 }),
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-plane',
                     src: '#groundTexture',
                     rotation: '-90 0 0',
                     height: '100',
                     width: '100'
                 }),
-                h(
+                (0, _preact.h)(
                     _aframeReact.Entity,
                     { primitive: 'a-camera', 'look-controls': true, 'wasd-controls-enabled': 'false' },
-                    h(_aframeReact.Entity, {
+                    (0, _preact.h)(_aframeReact.Entity, {
                         primitive: 'a-cursor',
                         cursor: { fuse: false },
                         material: { color: 'white', shader: 'flat', opacity: 1.75 },
                         geometry: { radiusInner: 0.005, radiusOuter: 0.007 }
                     })
                 ),
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     id: 'lidarSpheres',
                     spheresarray: {},
                     primitive: 'a-sphere',
                     radius: 0,
                     position: { x: 0.0, y: 0.0, z: 0.0 }
                 }),
-                h('a-entity', { 'oculus-touch-controls': true, 'x-button-listener': true, id: 'refresh-button', geometry: 'primitive: box',
+                (0, _preact.h)('a-entity', {
+                    'oculus-touch-controls': true,
+                    'x-button-listener': true,
+                    id: 'refresh-button',
+                    geometry: 'primitive: box',
                     material: 'color: red', position: '-2 0 -2' })
             );
         }
@@ -136500,16 +136561,16 @@ var myScene = function (_Component2) {
     _createClass(myScene, [{
         key: 'render',
         value: function render() {
-            return h(
+            return (0, _preact.h)(
                 _aframeReact.Scene,
                 { 'vr-mode-ui': 'enabled: false' },
-                h(
+                (0, _preact.h)(
                     'a-assets',
                     null,
-                    h('img', { crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg' }),
-                    h('img', { crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg' })
+                    (0, _preact.h)('img', {crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg'}),
+                    (0, _preact.h)('img', {crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg'})
                 ),
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-sky',
                     height: '2048',
                     radius: '30',
@@ -136517,31 +136578,35 @@ var myScene = function (_Component2) {
                     'theta-length': '90',
                     width: '2048'
                 }),
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-plane',
                     src: '#groundTexture',
                     rotation: '-90 0 0',
                     height: '100',
                     width: '100'
                 }),
-                h(
+                (0, _preact.h)(
                     _aframeReact.Entity,
                     { primitive: 'a-camera', 'look-controls': true, 'wasd-controls-enabled': 'false' },
-                    h(_aframeReact.Entity, {
+                    (0, _preact.h)(_aframeReact.Entity, {
                         primitive: 'a-cursor',
                         cursor: { fuse: false },
                         material: { color: 'white', shader: 'flat', opacity: 1.75 },
                         geometry: { radiusInner: 0.005, radiusOuter: 0.007 }
                     })
                 ),
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     id: 'lidarSpheres',
                     spheresarray: {},
                     primitive: 'a-sphere',
                     radius: 0,
                     position: { x: 0.0, y: 0.0, z: 0.0 }
                 }),
-                h('a-entity', { 'oculus-touch-controls': true, 'x-button-listener': true, id: 'refresh-button', geometry: 'primitive: box',
+                (0, _preact.h)('a-entity', {
+                    'oculus-touch-controls': true,
+                    'x-button-listener': true,
+                    id: 'refresh-button',
+                    geometry: 'primitive: box',
                     material: 'color: red', position: '-2 0 -2' })
             );
         }
@@ -136562,10 +136627,10 @@ var basicScene = function (_Component3) {
     _createClass(basicScene, [{
         key: 'render',
         value: function render() {
-            return h(
+            return (0, _preact.h)(
                 _aframeReact.Scene,
                 { 'vr-mode-ui': 'enabled: false' },
-                h(_aframeReact.Entity, {
+                (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-sky',
                     height: '2048',
                     radius: '30',
@@ -136574,20 +136639,25 @@ var basicScene = function (_Component3) {
                     , width: '2048'
 
                 }),
-                h(
+                (0, _preact.h)(
                     _aframeReact.Entity,
                     { primitive: 'a-camera', camera: 'active: true', 'look-controls': true, 'wasd-controls-enabled': 'false' },
-                    h(_aframeReact.Entity, {
+                    (0, _preact.h)(_aframeReact.Entity, {
                         primitive: 'a-cursor',
                         cursor: { fuse: false },
                         material: { color: 'white', shader: 'flat', opacity: 2.75 },
                         geometry: { radiusInner: 0.005, radiusOuter: 0.007 }
                     }),
-                    h(_aframeReact.Entity, { id: 'scatchPlane', primitive: 'a-plane', width: 4, height: 2, position: { z: -1.5 },
+                    (0, _preact.h)(_aframeReact.Entity, {
+                        id: 'scatchPlane', primitive: 'a-plane', width: 4, height: 2, position: {z: -1.5},
                         material: { color: 'transparent', wireframe: true }, visible: false })
                 ),
-                h(_aframeReact.Entity, { id: 'lidarPoints' }),
-                h('a-entity', { 'oculus-touch-controls': true, 'x-button-listener': true, id: 'refresh-button', geometry: 'primitive: box',
+                (0, _preact.h)(_aframeReact.Entity, {id: 'lidarPoints'}),
+                (0, _preact.h)('a-entity', {
+                    'oculus-touch-controls': true,
+                    'x-button-listener': true,
+                    id: 'refresh-button',
+                    geometry: 'primitive: box',
                     material: 'color: red', position: '-2 0 -2' })
             );
         }

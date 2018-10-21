@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         if (e.shiftKey) {
+            document.querySelector('#drawingCanvas').setAttribute('visible', 'false');
             if (isFrameStopped) {
                 if (groupOfPoints.children.length == 2) {
                     makeBorder();

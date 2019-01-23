@@ -135829,36 +135829,27 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    (0, _preact.render)((0, _preact.h)(_lidarPoints2.default, {stepNumber: 0}), document.querySelector('#lidarPoints'));
+    (0, _preact.render)((0, _preact.h)(_lidarPoints2.default, { stepNumber: 0 }), document.querySelector('#lidarPoints'));
 });
 
 document.addEventListener('DOMContentLoaded', function () {
     var dat = require('dat.gui');
     var gui = new dat.GUI();
+    var paint;
+    var context = createDrawingCanvas();
+    var startPointX;
+    var startPointY;
+    var endPointX;
+    var endPointY;
     var variable = new guiFunction();
     scene = document.querySelector('a-scene');
     setUpScene();
+    var drawingCanvas = document.getElementById('drawingCanvas');
 
-    // may be usefull document.querySelector('#my-gui-container').firstChild.children[1].children[1].firstChild.children[1].firstChild.firstChild.value
     var stepNumber = gui.add(variable, 'stepNumber').min(0).max(100).step(1);
-    var rotationValue = gui.add(variable, 'rotationValue').min(-1).max(1).step(0.01);
-
-    rotationValue.onChange(function (value) {
-        var help = void 0;
-        if (value > variable.oldRotationValue) {
-            help = value - variable.oldRotationValue;
-            help = help / 0.1;
-            document.querySelector('a-camera').object3D.rotation.y += help * 0.2;
-        } else if (value < variable.oldRotationValue) {
-            help = variable.oldRotationValue - value;
-            help = help / 0.1;
-            document.querySelector('a-camera').object3D.rotation.y -= help * 0.2;
-        }
-        variable.oldRotationValue = value;
-    });
 
     stepNumber.onChange(function (value) {
-        (0, _preact.render)((0, _preact.h)(_lidarPoints2.default, {stepNumber: value}), document.querySelector('#lidarPoints'));
+        (0, _preact.render)((0, _preact.h)(_lidarPoints2.default, { stepNumber: value }), document.querySelector('#lidarPoints'));
     });
 
     var customContainer = document.querySelector('#my-gui-container');
@@ -135870,135 +135861,171 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!isFrameStopped) {
                 document.querySelector('#scatchPlane').setAttribute('visible', 'true');
                 scene.pause();
-                // setUpDrawing();
-                document.addEventListener('mousedown', onMouseDown, false);
-                //test
-                //                 window.addEventListener( 'mousemove', onMouseMove, false );
+                // document.addEventListener('mousedown', onMouseDown, false);
 
-                // console.log("ctrl key down");
                 isFrameStopped = true;
+                drawingCanvas.style.visibility = 'visible';
             }
         }
         if (e.altKey) {
             if (isFrameStopped) {
                 document.querySelector('#scatchPlane').setAttribute('visible', 'false');
-                removeBorderPoints();
-                document.removeEventListener('mousedown', onMouseDown, false);
+                // removeBorderPoints();
+                // document.removeEventListener('mousedown', onMouseDown, false);
                 isFrameStopped = false;
                 scene.play();
+                clearAndHideCanvas();
                 // console.log(scene.object3D);
             }
         }
         if (e.shiftKey) {
             document.querySelector('#drawingCanvas').setAttribute('visible', 'false');
             if (isFrameStopped) {
-                if (groupOfPoints.children.length == 2) {
+                // if (groupOfPoints.children.length == 2) {
+                //     makeBorder();
+                //     document.querySelector('#scatchPlane').setAttribute('visible', 'false');
+                //     removeBorderPoints();
+                //     isFrameStopped = false;
+                //     scene.play();
+                // }
+                if (endPointX != null && startPointX != null) {
                     makeBorder();
                     document.querySelector('#scatchPlane').setAttribute('visible', 'false');
-                    removeBorderPoints();
                     isFrameStopped = false;
                     scene.play();
+                    clearAndHideCanvas();
                 }
             }
         }
     };
+    //
+    // function removeBorderPoints() {
+    //     for (let i = groupOfPoints.children.length; i >= 0; i--) {
+    //         groupOfPoints.remove(groupOfPoints.children[i]);
+    //     }
+    // }
+    //
+    // function onMouseDown(evt) {
+    //
+    //     if (evt.which == 3) return;
+    //     if (isFrameStopped) {
+    //         let x = (event.clientX / window.innerWidth) * 2 - 1;
+    //         let y = -(event.clientY / window.innerHeight) * 2 + 1;
+    //
+    //         // do not register if right mouse button is pressed.
+    //
+    //         var vNow = new THREE.Vector3(x, y, 0);
+    //         vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
+    //         console.log(vNow.x + " " + vNow.y + " " + vNow.z);
+    //         // splineArray.push(vNow);
+    //         console.log(line);
+    //
+    //
+    //         var geometry = new THREE.SphereGeometry(0.05, 4, 4);
+    //         var material = new THREE.MeshBasicMaterial({color: 0xffff00});
+    //         var sphere = new THREE.Mesh(geometry, material);
+    //
+    //         let length = Math.sqrt(vNow.x ** 2 + (vNow.y - 1.6) ** 2 + vNow.z ** 2);
+    //         let scalingFactor = 1.5 / Math.abs(length);
+    //         sphere.position.set(scalingFactor * vNow.x, scalingFactor * (vNow.y - 1.6) + 1.6, scalingFactor * vNow.z);
+    //
+    //         if (groupOfPoints.children.length == 2) {
+    //             groupOfPoints.remove(groupOfPoints.children[0]);
+    //         }
+    //         groupOfPoints.add(sphere);
+    // //         // scene.add(sphere);
+    //     }
+    // }
 
-    function removeBorderPoints() {
-        for (var i = groupOfPoints.children.length; i >= 0; i--) {
-            groupOfPoints.remove(groupOfPoints.children[i]);
-        }
-    }
-
-    function onMouseDown(evt) {
-
-        if (evt.which == 3) return;
-        if (isFrameStopped) {
-            var x = event.clientX / window.innerWidth * 2 - 1;
-            var y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            // do not register if right mouse button is pressed.
-
-            var vNow = new THREE.Vector3(x, y, 0);
-            vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
-            console.log(vNow.x + " " + vNow.y + " " + vNow.z);
-            // splineArray.push(vNow);
-            console.log(line);
-
-            var geometry = new THREE.SphereGeometry(0.05, 4, 4);
-            var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-            var sphere = new THREE.Mesh(geometry, material);
-
-            var length = Math.sqrt(Math.pow(vNow.x, 2) + Math.pow(vNow.y - 1.6, 2) + Math.pow(vNow.z, 2));
-            var scalingFactor = 1.5 / Math.abs(length);
-            // console.log(scalingFactor);
-            // console.log(scalingFactor* vNow.z);
-            // console.log(scalingFactor* (vNow.y-1.6));
-            // console.log(scalingFactor* vNow.x);
-            sphere.position.set(scalingFactor * vNow.x, scalingFactor * (vNow.y - 1.6) + 1.6, scalingFactor * vNow.z);
-
-            if (groupOfPoints.children.length == 2) {
-                groupOfPoints.remove(groupOfPoints.children[0]);
-            }
-            groupOfPoints.add(sphere);
-            // scene.add(sphere);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-
-        var clickX = new Array();
-        var clickY = new Array();
-        var clickDrag = new Array();
-        var paint;
-        var context = document.getElementById('canvasInAPerfectWorld').getContext("2d");
-        var drawingCanvas = document.querySelector('#drawingCanvas');
-        drawingCanvas.mousedown(function (e) {
-            var mouseX = e.pageX - this.offsetLeft;
-            var mouseY = e.pageY - this.offsetTop;
-
-            paint = true;
-            addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+    document.querySelector('#drawingCanvas').addEventListener("mousedown", function (e) {
+        paint = true;
+        setEndpointToNull();
+        setStartPoint(e);
+        redraw();
+    });
+    document.querySelector('#drawingCanvas').addEventListener("mousemove", function (e) {
+        if (paint) {
+            setEndPoint(e);
             redraw();
-        });
-        drawingCanvas.mousemove(function (e) {
-            if (paint) {
-                addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
-                redraw();
-            }
-        });
-        drawingCanvas.mouseup(function (e) {
-            paint = false;
-        });
-        drawingCanvas.mouseleave(function (e) {
-            paint = false;
-        });
-
-        function addClick(x, y, dragging) {
-            clickX.push(x);
-            clickY.push(y);
-            clickDrag.push(dragging);
-        }
-
-        function redraw() {
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
-
-            context.strokeStyle = "#df4b26";
-            context.lineJoin = "round";
-            context.lineWidth = 5;
-
-            for (var i = 0; i < clickX.length; i++) {
-                context.beginPath();
-                if (clickDrag[i] && i) {
-                    context.moveTo(clickX[i - 1], clickY[i - 1]);
-                } else {
-                    context.moveTo(clickX[i] - 1, clickY[i]);
-                }
-                context.lineTo(clickX[i], clickY[i]);
-                context.closePath();
-                context.stroke();
-            }
         }
     });
+    document.querySelector('#drawingCanvas').addEventListener("mouseup", function (e) {
+        paint = false;
+        setEndPoint(e);
+        if (isPointsTooClose()) {
+            setEndpointToNull();
+            setStartpointToNull();
+        }
+        redraw();
+    });
+    document.querySelector('#drawingCanvas').addEventListener("mouseleave", function (e) {
+        paint = false;
+        setEndpointToNull();
+        setStartpointToNull();
+        redraw();
+    });
+    function redraw() {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+        context.strokeStyle = "#df4b26";
+        context.lineJoin = "round";
+
+        context.lineWidth = 5;
+        if (endPointX) {
+            drawLineAndRender(context, startPointX, startPointY, endPointX, startPointY);
+            drawLineAndRender(context, endPointX, startPointY, endPointX, endPointY);
+            drawLineAndRender(context, endPointX, endPointY, startPointX, endPointY);
+            drawLineAndRender(context, startPointX, endPointY, startPointX, startPointY);
+        }
+    }
+    function drawLineAndRender(context, startPointX, startPointY, endPointX, endPointY) {
+
+        context.beginPath();
+        context.moveTo(startPointX, startPointY);
+
+        context.lineTo(endPointX, endPointY);
+        context.closePath();
+        context.stroke();
+    }
+    function setEndPoint(e) {
+        endPointX = e.pageX;
+        endPointY = e.pageY;
+    }
+    function setEndpointToNull() {
+        endPointY = null;
+        endPointX = null;
+    }
+    function setStartpointToNull() {
+        startPointX = null;
+        startPointY = null;
+    }
+    function setStartPoint(e) {
+        startPointX = e.pageX;
+        startPointY = e.pageY;
+    }
+    function isPointsTooClose() {
+        var distance = Math.sqrt(Math.pow(startPointX - endPointX, 2) + Math.pow(startPointY - endPointY, 2));
+        if (distance < 70) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function createDrawingCanvas() {
+        var canvasDiv = document.getElementById('drawingCanvasDiv');
+        var canvas = document.createElement('canvas');
+        canvas.setAttribute('width', window.innerWidth);
+        canvas.setAttribute('height', window.innerHeight);
+        canvas.setAttribute('id', 'drawingCanvas');
+        canvasDiv.appendChild(canvas);
+        if (typeof G_vmlCanvasManager != 'undefined') {
+            canvas = G_vmlCanvasManager.initElement(canvas);
+        }
+        return canvas.getContext("2d");
+    }
+    function clearAndHideCanvas() {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+        drawingCanvas.style.visibility = 'hidden';
+    }
 
     // }
     // function setUpDrawing() {
@@ -136042,8 +136069,10 @@ document.addEventListener('DOMContentLoaded', function () {
     //from 2 poitns make rectangle
     function makeBorder() {
         var geometry = new THREE.Geometry();
-        var firstPoint = groupOfPoints.children[0].position;
-        var secondPoint = groupOfPoints.children[1].position;
+        // let firstPoint = groupOfPoints.children[0].position;
+        // let secondPoint = groupOfPoints.children[1].position;
+        var firstPoint = create3DPoint(startPointX, startPointY);
+        var secondPoint = create3DPoint(endPointX, endPointY);
 
         // console.log(geometry);
         geometry.vertices.push(firstPoint);
@@ -136060,6 +136089,19 @@ document.addEventListener('DOMContentLoaded', function () {
         camera.position.set(0, 1.6, 0);
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
+    }
+    function create3DPoint(screenX, screenY) {
+
+        var x = screenX / window.innerWidth * 2 - 1;
+        var y = -(screenY / window.innerHeight) * 2 + 1;
+
+        var vNow = new THREE.Vector3(x, y, 0);
+        vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
+
+        var length = Math.sqrt(Math.pow(vNow.x, 2) + Math.pow(vNow.y - 1.6, 2) + Math.pow(vNow.z, 2));
+        var scalingFactor = 1.5 / Math.abs(length);
+        return new THREE.Vector3(scalingFactor * vNow.x, scalingFactor * (vNow.y - 1.6) + 1.6, scalingFactor * vNow.z);
+        // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
     }
 });
 
@@ -136107,8 +136149,6 @@ var lidarPoints = function (_Component) {
             maximumStepNumber: 0,
             images: ['img/360IMGStreet.jpg', 'img/image1.jpg', 'img/image2.jpg', 'img/image3.jpeg']
         };
-
-        console.log(location.pathname);
         return _this;
     }
 
@@ -136482,8 +136522,8 @@ var Main = function (_Component) {
                 (0, _preact.h)(
                     'a-assets',
                     null,
-                    (0, _preact.h)('img', {crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg'}),
-                    (0, _preact.h)('img', {crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg'})
+                    (0, _preact.h)('img', { crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg' }),
+                    (0, _preact.h)('img', { crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg' })
                 ),
                 (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-sky',
@@ -136517,11 +136557,7 @@ var Main = function (_Component) {
                     radius: 0,
                     position: { x: 0.0, y: 0.0, z: 0.0 }
                 }),
-                (0, _preact.h)('a-entity', {
-                    'oculus-touch-controls': true,
-                    'x-button-listener': true,
-                    id: 'refresh-button',
-                    geometry: 'primitive: box',
+                (0, _preact.h)('a-entity', { 'oculus-touch-controls': true, 'x-button-listener': true, id: 'refresh-button', geometry: 'primitive: box',
                     material: 'color: red', position: '-2 0 -2' })
             );
         }
@@ -136567,8 +136603,8 @@ var myScene = function (_Component2) {
                 (0, _preact.h)(
                     'a-assets',
                     null,
-                    (0, _preact.h)('img', {crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg'}),
-                    (0, _preact.h)('img', {crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg'})
+                    (0, _preact.h)('img', { crossOrigin: true, id: 'groundTexture', src: 'img/floor.jpg' }),
+                    (0, _preact.h)('img', { crossOrigin: true, id: 'skyTexture', src: 'img/sky.jpg' })
                 ),
                 (0, _preact.h)(_aframeReact.Entity, {
                     primitive: 'a-sky',
@@ -136602,11 +136638,7 @@ var myScene = function (_Component2) {
                     radius: 0,
                     position: { x: 0.0, y: 0.0, z: 0.0 }
                 }),
-                (0, _preact.h)('a-entity', {
-                    'oculus-touch-controls': true,
-                    'x-button-listener': true,
-                    id: 'refresh-button',
-                    geometry: 'primitive: box',
+                (0, _preact.h)('a-entity', { 'oculus-touch-controls': true, 'x-button-listener': true, id: 'refresh-button', geometry: 'primitive: box',
                     material: 'color: red', position: '-2 0 -2' })
             );
         }
@@ -136648,16 +136680,11 @@ var basicScene = function (_Component3) {
                         material: { color: 'white', shader: 'flat', opacity: 2.75 },
                         geometry: { radiusInner: 0.005, radiusOuter: 0.007 }
                     }),
-                    (0, _preact.h)(_aframeReact.Entity, {
-                        id: 'scatchPlane', primitive: 'a-plane', width: 4, height: 2, position: {z: -1.5},
+                    (0, _preact.h)(_aframeReact.Entity, { id: 'scatchPlane', primitive: 'a-plane', width: 4, height: 2, position: { z: -1.5 },
                         material: { color: 'transparent', wireframe: true }, visible: false })
                 ),
-                (0, _preact.h)(_aframeReact.Entity, {id: 'lidarPoints'}),
-                (0, _preact.h)('a-entity', {
-                    'oculus-touch-controls': true,
-                    'x-button-listener': true,
-                    id: 'refresh-button',
-                    geometry: 'primitive: box',
+                (0, _preact.h)(_aframeReact.Entity, { id: 'lidarPoints' }),
+                (0, _preact.h)('a-entity', { 'oculus-touch-controls': true, 'x-button-listener': true, id: 'refresh-button', geometry: 'primitive: box',
                     material: 'color: red', position: '-2 0 -2' })
             );
         }

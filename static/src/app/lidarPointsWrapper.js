@@ -1,4 +1,4 @@
-import {Component} from 'preact'
+import {Component,h} from 'preact'
 import 'react'
 
 const dat = require('dat.gui');

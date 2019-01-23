@@ -1,4 +1,4 @@
-import {Component} from 'preact'
+import {Component,h} from 'preact'
 import 'react'
 
 var THREE = require('three');
@@ -16,8 +16,6 @@ class lidarPoints extends Component {
             maximumStepNumber: 0,
             images: ['img/360IMGStreet.jpg', 'img/image1.jpg', 'img/image2.jpg', 'img/image3.jpeg'],
         };
-
-        console.log(location.pathname);
     }
 
     // componentDidMount() {

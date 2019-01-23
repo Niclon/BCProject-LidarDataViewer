@@ -4,9 +4,9 @@
  * It defines the main A-Frame Scene which gets mounted root div.
  */
 
-import {Component} from 'preact'
-import {Entity, Scene} from 'aframe-react'
-import 'react'
+import {Component,h} from 'preact';
+import {Entity, Scene} from 'aframe-react';
+import 'react';
 
 
 var THREE = require('three');

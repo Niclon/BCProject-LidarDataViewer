@@ -5,16 +5,16 @@
  * Finally, it mounts the app to the root node.
  */
 
-import 'aframe'
-import 'aframe-animation-component'
-import 'aframe-event-set-component'
-import 'aframe-particle-system-component'
-import './components/aframe-custom'
-import './components/aframe-environment'
-import './components/aframe-effects'
-import {render} from 'preact'
-import Main from './main'
-import LidarPoints from './lidarPoints'
+import 'aframe';
+import 'aframe-animation-component';
+import 'aframe-event-set-component';
+import 'aframe-particle-system-component';
+import './components/aframe-custom';
+import './components/aframe-environment';
+import './components/aframe-effects';
+import {render,h} from 'preact';
+import Main from './main';
+import LidarPoints from './lidarPoints';
 // import * as dat from 'dat.gui'
 
 var isFrameStopped = false;
@@ -28,7 +28,7 @@ var material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 2});
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    render(<Main/>, document.querySelector('#app'))
+    render(<Main/>, document.querySelector('#app'));
 
 });
 
@@ -39,28 +39,19 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const dat = require('dat.gui');
     const gui = new dat.GUI();
+    var paint;
+    var context = createDrawingCanvas();
+    var startPointX;
+    var startPointY;
+    var endPointX;
+    var endPointY;
     let variable = new guiFunction();
     scene = document.querySelector('a-scene');
     setUpScene();
+    var drawingCanvas = document.getElementById('drawingCanvas');
 
 
-    // may be usefull document.querySelector('#my-gui-container').firstChild.children[1].children[1].firstChild.children[1].firstChild.firstChild.value
     let stepNumber = gui.add(variable, 'stepNumber').min(0).max(100).step(1);
-    let rotationValue = gui.add(variable, 'rotationValue').min(-1).max(1).step(0.01);
-
-    rotationValue.onChange(function (value) {
-        let help;
-        if (value > variable.oldRotationValue) {
-            help = value - variable.oldRotationValue;
-            help = help / 0.1;
-            document.querySelector('a-camera').object3D.rotation.y += help * 0.2;
-        } else if (value < variable.oldRotationValue) {
-            help = variable.oldRotationValue - value;
-            help = help / 0.1;
-            document.querySelector('a-camera').object3D.rotation.y -= help * 0.2;
-        }
-        variable.oldRotationValue = value;
-    });
 
     stepNumber.onChange(function (value) {
         render(<LidarPoints stepNumber={value}/>, document.querySelector('#lidarPoints'));
@@ -77,80 +68,172 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isFrameStopped) {
                 document.querySelector('#scatchPlane').setAttribute('visible', 'true');
                 scene.pause();
-                // setUpDrawing();
-                document.addEventListener('mousedown', onMouseDown, false);
-//test
-//                 window.addEventListener( 'mousemove', onMouseMove, false );
+                // document.addEventListener('mousedown', onMouseDown, false);
 
-                // console.log("ctrl key down");
                 isFrameStopped = true;
+                drawingCanvas.style.visibility='visible';
             }
         }
         if (e.altKey) {
             if (isFrameStopped) {
                 document.querySelector('#scatchPlane').setAttribute('visible', 'false');
-                removeBorderPoints();
-                document.removeEventListener('mousedown', onMouseDown, false);
+                // removeBorderPoints();
+                // document.removeEventListener('mousedown', onMouseDown, false);
                 isFrameStopped = false;
                 scene.play();
+                clearAndHideCanvas();
                 // console.log(scene.object3D);
             }
         }
         if (e.shiftKey) {
             document.querySelector('#drawingCanvas').setAttribute('visible', 'false');
             if (isFrameStopped) {
-                if (groupOfPoints.children.length == 2) {
+                // if (groupOfPoints.children.length == 2) {
+                //     makeBorder();
+                //     document.querySelector('#scatchPlane').setAttribute('visible', 'false');
+                //     removeBorderPoints();
+                //     isFrameStopped = false;
+                //     scene.play();
+                // }
+                if (endPointX != null && startPointX != null){
                     makeBorder();
                     document.querySelector('#scatchPlane').setAttribute('visible', 'false');
-                    removeBorderPoints();
                     isFrameStopped = false;
                     scene.play();
+                    clearAndHideCanvas();
                 }
             }
         }
 
     };
+    //
+    // function removeBorderPoints() {
+    //     for (let i = groupOfPoints.children.length; i >= 0; i--) {
+    //         groupOfPoints.remove(groupOfPoints.children[i]);
+    //     }
+    // }
+    //
+    // function onMouseDown(evt) {
+    //
+    //     if (evt.which == 3) return;
+    //     if (isFrameStopped) {
+    //         let x = (event.clientX / window.innerWidth) * 2 - 1;
+    //         let y = -(event.clientY / window.innerHeight) * 2 + 1;
+    //
+    //         // do not register if right mouse button is pressed.
+    //
+    //         var vNow = new THREE.Vector3(x, y, 0);
+    //         vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
+    //         console.log(vNow.x + " " + vNow.y + " " + vNow.z);
+    //         // splineArray.push(vNow);
+    //         console.log(line);
+    //
+    //
+    //         var geometry = new THREE.SphereGeometry(0.05, 4, 4);
+    //         var material = new THREE.MeshBasicMaterial({color: 0xffff00});
+    //         var sphere = new THREE.Mesh(geometry, material);
+    //
+    //         let length = Math.sqrt(vNow.x ** 2 + (vNow.y - 1.6) ** 2 + vNow.z ** 2);
+    //         let scalingFactor = 1.5 / Math.abs(length);
+    //         sphere.position.set(scalingFactor * vNow.x, scalingFactor * (vNow.y - 1.6) + 1.6, scalingFactor * vNow.z);
+    //
+    //         if (groupOfPoints.children.length == 2) {
+    //             groupOfPoints.remove(groupOfPoints.children[0]);
+    //         }
+    //         groupOfPoints.add(sphere);
+    // //         // scene.add(sphere);
+    //     }
+    // }
 
-    function removeBorderPoints() {
-        for (let i = groupOfPoints.children.length; i >= 0; i--) {
-            groupOfPoints.remove(groupOfPoints.children[i]);
+    document.querySelector('#drawingCanvas').addEventListener("mousedown",function(e){
+        paint = true;
+        setEndpointToNull();
+        setStartPoint(e);
+        redraw();
+    });
+    document.querySelector('#drawingCanvas').addEventListener("mousemove",function(e){
+        if(paint){
+            setEndPoint(e);
+            redraw();
+        }
+    });
+    document.querySelector('#drawingCanvas').addEventListener("mouseup",function(e){
+        paint = false;
+        setEndPoint(e);
+        if (isPointsTooClose()){
+            setEndpointToNull();
+            setStartpointToNull();
+        }
+        redraw();
+    });
+    document.querySelector('#drawingCanvas').addEventListener("mouseleave", function(e){
+        paint = false;
+        setEndpointToNull();
+        setStartpointToNull();
+        redraw();
+    });
+    function redraw(){
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+        context.strokeStyle = "#df4b26";
+        context.lineJoin = "round";
+
+        context.lineWidth = 5;
+        if (endPointX){
+            drawLineAndRender(context,startPointX,startPointY,endPointX,startPointY);
+            drawLineAndRender(context,endPointX,startPointY,endPointX,endPointY);
+            drawLineAndRender(context,endPointX,endPointY,startPointX,endPointY);
+            drawLineAndRender(context,startPointX,endPointY,startPointX,startPointY);
         }
     }
+    function drawLineAndRender(context,startPointX,startPointY,endPointX,endPointY){
 
-    function onMouseDown(evt) {
+        context.beginPath();
+        context.moveTo(startPointX,startPointY);
 
-        if (evt.which == 3) return;
-        if (isFrameStopped) {
-            let x = (event.clientX / window.innerWidth) * 2 - 1;
-            let y = -(event.clientY / window.innerHeight) * 2 + 1;
+        context.lineTo(endPointX,endPointY);
+        context.closePath();
+        context.stroke();
 
-            // do not register if right mouse button is pressed.
-
-            var vNow = new THREE.Vector3(x, y, 0);
-            vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
-            console.log(vNow.x + " " + vNow.y + " " + vNow.z);
-            // splineArray.push(vNow);
-            console.log(line);
-
-
-            var geometry = new THREE.SphereGeometry(0.05, 4, 4);
-            var material = new THREE.MeshBasicMaterial({color: 0xffff00});
-            var sphere = new THREE.Mesh(geometry, material);
-
-            let length = Math.sqrt(vNow.x ** 2 + (vNow.y - 1.6) ** 2 + vNow.z ** 2);
-            let scalingFactor = 1.5 / Math.abs(length);
-            // console.log(scalingFactor);
-            // console.log(scalingFactor* vNow.z);
-            // console.log(scalingFactor* (vNow.y-1.6));
-            // console.log(scalingFactor* vNow.x);
-            sphere.position.set(scalingFactor * vNow.x, scalingFactor * (vNow.y - 1.6) + 1.6, scalingFactor * vNow.z);
-
-            if (groupOfPoints.children.length == 2) {
-                groupOfPoints.remove(groupOfPoints.children[0]);
-            }
-            groupOfPoints.add(sphere);
-            // scene.add(sphere);
+    }
+    function setEndPoint(e) {
+        endPointX = e.pageX;
+        endPointY = e.pageY;
+    }
+    function setEndpointToNull() {
+        endPointY = null;
+        endPointX = null;
+    }
+    function setStartpointToNull() {
+        startPointX = null;
+        startPointY = null;
+    }
+    function setStartPoint(e) {
+        startPointX = e.pageX;
+        startPointY = e.pageY;
+    }
+    function isPointsTooClose() {
+        let distance = Math.sqrt(Math.pow(startPointX-endPointX,2) + Math.pow(startPointY-endPointY,2));
+        if (distance < 70){
+            return true;
+        } else {
+            return false
         }
+    }
+    function createDrawingCanvas() {
+        var canvasDiv = document.getElementById('drawingCanvasDiv');
+        var canvas = document.createElement('canvas');
+        canvas.setAttribute('width', window.innerWidth);
+        canvas.setAttribute('height', window.innerHeight);
+        canvas.setAttribute('id', 'drawingCanvas');
+        canvasDiv.appendChild(canvas);
+        if(typeof G_vmlCanvasManager != 'undefined') {
+            canvas = G_vmlCanvasManager.initElement(canvas);
+        }
+        return canvas.getContext("2d");
+    }
+    function clearAndHideCanvas() {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+        drawingCanvas.style.visibility = 'hidden';
     }
 
 
@@ -196,8 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
     //from 2 poitns make rectangle
     function makeBorder() {
         let geometry = new THREE.Geometry();
-        let firstPoint = groupOfPoints.children[0].position;
-        let secondPoint = groupOfPoints.children[1].position;
+        // let firstPoint = groupOfPoints.children[0].position;
+        // let secondPoint = groupOfPoints.children[1].position;
+        let firstPoint = create3DPoint(startPointX,startPointY);
+        let secondPoint = create3DPoint(endPointX,endPointY);
 
         // console.log(geometry);
         geometry.vertices.push(firstPoint);
@@ -215,6 +300,19 @@ document.addEventListener('DOMContentLoaded', () => {
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
 
+    }
+    function create3DPoint(screenX,screenY) {
+
+        let x = (screenX / window.innerWidth) * 2 - 1;
+        let y = -(screenY / window.innerHeight) * 2 + 1;
+
+        let vNow = new THREE.Vector3(x, y, 0);
+        vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
+
+        let length = Math.sqrt(vNow.x ** 2 + (vNow.y - 1.6) ** 2 + vNow.z ** 2);
+        let scalingFactor = 1.5 / Math.abs(length);
+        return new THREE.Vector3((scalingFactor * vNow.x),((scalingFactor * (vNow.y - 1.6)) + 1.6),(scalingFactor * vNow.z));
+        // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
     }
 });
 

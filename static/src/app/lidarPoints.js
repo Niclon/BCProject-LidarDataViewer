@@ -1,4 +1,4 @@
-import {Component,h} from 'preact'
+import {Component} from 'preact'
 import 'react'
 
 var THREE = require('three');
@@ -139,7 +139,7 @@ class lidarPoints extends Component {
 
     render() {
         this.removeSpheres();
-        // this.makeBackroundIMG();
+        this.makeBackroundIMG();
         const scene = document.querySelector('a-scene').object3D;
         let camera = {x: 0, y: 2, z: 0};
         let spheres = new THREE.Group();
@@ -167,8 +167,6 @@ class lidarPoints extends Component {
         }
 
         scene.add(spheres);
-        // console.log(this.state.stepNumber);
-        // console.log(this);
         this.takePicturesfromCameras();
         return (null);
     }

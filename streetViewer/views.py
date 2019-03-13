@@ -10,6 +10,10 @@ from rest_framework.response import Response
 
 globalCounter = 0
 pathForImages = "ImagesOfCameras/"
+pathForData = 'C:\\Users\\MSI\\PycharmProjects\\bc\\datastorage\\data-standing\\'
+fileNamePrefix = 'LidarData_'
+fileNameSuffix = '.json'
+
 # Create your views here.def index(request):
 
 # class lidarReader:
@@ -46,13 +50,13 @@ def getImageData(request):
 
 @api_view(["GET"])
 @csrf_exempt
-def DataStored(request):
+def dataStored(request, fileId):
     try:
-        val = lidarReader()
-        value = lidarReader.lidarPoints
-        resp = JsonResponse(value,safe=False)
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
-
+        finalFileName = pathForData + fileNamePrefix + str(fileId) + fileNameSuffix
+        with open(finalFileName) as json_file:
+            data = json.load(json_file)
+            resp = JsonResponse(data, safe=False)
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
     except ValueError as e:
         return Response(e.args[0],status.HTTP_400_BAD_REQUEST)

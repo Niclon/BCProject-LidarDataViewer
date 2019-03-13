@@ -16,20 +16,21 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include
+from rest_framework import routers
 
 from streetViewer import views
 from streetViewer.views import *
 
 #url(r'^', TemplateView.as_view(template_name="index.html")),
+router = routers.DefaultRouter()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    # url(r'^dataStored/',dataStored),
     url(r'^api-auth/', include('rest_framework.urls')),
 
-    url(r'^datastored',views.DataStored),
+    url(r'^dataStored/(?P<fileId>\d+)/$', views.dataStored, name='dataStored'),
     url(r'^Images/$',views.getImageData, name='Images'),
-    url(r'^',index),
+    url(r'^$', index),
 
 
 ]

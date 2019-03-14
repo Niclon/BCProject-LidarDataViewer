@@ -111,7 +111,7 @@ class lidarPoints extends Component {
             dataToSend.push({
                 key: 'camera' + i,
                 value: dataURL
-            })
+            });
             // console.log(dataURL)
         }
         this.sendImagesToServer(JSON.stringify(dataToSend));
@@ -136,40 +136,97 @@ class lidarPoints extends Component {
         //      });
     }
 
+    loadDataFromServer() {
+        let request = new XMLHttpRequest();
+        request.open('GET', '/dataStored/' + this.state.stepNumber, false);  // `false` makes the request synchronous
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.send(null);
+        if (request.status === 200) {
+            this.state.lidarPoints = JSON.parse(request.response);
+        }
 
-    render() {
-        this.removeSpheres();
-        this.makeBackroundIMG();
+        // $.ajax({
+        //     url: 'dataStored/' + this.state.stepNumber,
+        //     async: false,
+        //     dataType: 'json',
+        //     success: function (response) {
+        //         // do stuff with response.
+        //         this.state.lidarPoints = response;
+        //     }
+        // });
+    }
+
+    renderPointsFromData() {
+        let geometry = new THREE.SphereGeometry(0.005, 4, 4);
+        let material = new THREE.MeshBasicMaterial({color: 0x39ff14});
+
         const scene = document.querySelector('a-scene').object3D;
         let camera = {x: 0, y: 2, z: 0};
         let spheres = new THREE.Group();
         spheres.name = "Spheres";
 
-        let geometry = new THREE.SphereGeometry(0.005, 4, 4);
-        let material = new THREE.MeshBasicMaterial({color: 0x39ff14});
+        let that = this.state.lidarPoints;
 
-        let myDistanceForTesting = this.state.stepNumber / 3;
-        // angle is 32 degrees and distance between one laser is 2 deg
-        let angleDeg = 90 + 16;
-        let angleRad = angleDeg * Math.PI / 180;
-        for (let i = 0; i < 16; i++) {
-            for (let j = 0; j < 360; j++) {
-                let x = myDistanceForTesting * Math.sin(angleRad) * Math.sin(j * Math.PI / 180);
-                let y = myDistanceForTesting * Math.cos(angleRad);
-                let z = myDistanceForTesting * Math.sin(angleRad) * Math.cos(j * Math.PI / 180);
-                // i * Math.PI / 180
-                let sphere = new THREE.Mesh(geometry, material);
-                sphere.position.set(x, y + camera.y, z);
-                spheres.add(sphere);
-            }
-            angleDeg -= 2;
-            angleRad = angleDeg * Math.PI / 180;
-        }
+        Object.keys(this.state.lidarPoints).forEach(function (key) {
+            let value = that[key];
+            let sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(value[0], value[2] + camera.y, -value[1]);
+            spheres.add(sphere);
+        });
+        // this.state.lidarPoints.forEach(function (key, value) {
+        //     let sphere = new THREE.Mesh(geometry, material);
+        //     sphere.position.set(value[0], value[1] + camera.y, value[2]);
+        //     spheres.add(sphere);
+        // });
+
 
         scene.add(spheres);
-        this.takePicturesfromCameras();
+    }
+
+    render() {
+        this.removeSpheres();
+        this.makeBackroundIMG();
+        this.loadDataFromServer();
+        this.renderPointsFromData();
+//         // this.takePicturesfromCameras();
         return (null);
     }
 }
+
+
+//     render() {
+//         this.removeSpheres();
+//         this.makeBackroundIMG();
+//         const scene = document.querySelector('a-scene').object3D;
+//         let camera = {x: 0, y: 2, z: 0};
+//         let spheres = new THREE.Group();
+//         spheres.name = "Spheres";
+//
+//         let geometry = new THREE.SphereGeometry(0.005, 4, 4);
+//         let material = new THREE.MeshBasicMaterial({color: 0x39ff14});
+//
+//         let myDistanceForTesting = this.state.stepNumber / 3;
+//         // angle is 32 degrees and distance between one laser is 2 deg
+//         let angleDeg = 90 + 16;
+//         let angleRad = angleDeg * Math.PI / 180;
+//         for (let i = 0; i < 16; i++) {
+//             for (let j = 0; j < 360; j++) {
+//                 let x = myDistanceForTesting * Math.sin(angleRad) * Math.sin(j * Math.PI / 180);
+//                 let y = myDistanceForTesting * Math.cos(angleRad);
+//                 let z = myDistanceForTesting * Math.sin(angleRad) * Math.cos(j * Math.PI / 180);
+//                 // i * Math.PI / 180
+//                 let sphere = new THREE.Mesh(geometry, material);
+//                 sphere.position.set(x, y + camera.y, z);
+//                 spheres.add(sphere);
+//             }
+//             angleDeg -= 2;
+//             angleRad = angleDeg * Math.PI / 180;
+//         }
+//
+//         scene.add(spheres);
+//         // this.takePicturesfromCameras();
+//         return (null);
+//     }
+// }
 
 export default (lidarPoints)

@@ -12,7 +12,7 @@ import 'aframe-particle-system-component';
 import './components/aframe-custom';
 import './components/aframe-environment';
 import './components/aframe-effects';
-import {render,h} from 'preact';
+import {render} from 'preact';
 import Main from './main';
 import LidarPoints from './lidarPoints';
 // import * as dat from 'dat.gui'
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var drawingCanvas = document.getElementById('drawingCanvas');
 
 
-    let stepNumber = gui.add(variable, 'stepNumber').min(0).max(100).step(1);
+    let stepNumber = gui.add(variable, 'stepNumber').min(0).max(220).step(1);
 
     stepNumber.onChange(function (value) {
         render(<LidarPoints stepNumber={value}/>, document.querySelector('#lidarPoints'));

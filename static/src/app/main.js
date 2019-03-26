@@ -4,7 +4,7 @@
  * It defines the main A-Frame Scene which gets mounted root div.
  */
 
-import {Component,h} from 'preact';
+import {Component} from 'preact';
 import {Entity, Scene} from 'aframe-react';
 import 'react';
 
@@ -12,7 +12,7 @@ import 'react';
 var THREE = require('three');
 
 
-const COLORS = ['#D92B6A', '#9564F2', '#FFCF59']
+const COLORS = ['#D92B6A', '#9564F2', '#FFCF59'];
 
 class Main extends Component {
     constructor(props) {

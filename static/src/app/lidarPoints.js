@@ -19,17 +19,15 @@ class lidarPoints extends Component {
     }
 
     // componentDidMount() {
-    //     fetch('http://127.0.0.1:8000/datastored')
-    //         .then(response => response.json())
+    //     fetch('http://127.0.0.1:8000/datastored/' + this.props.stepNumber)
+    //         .then(response => {
+    //             response.json();
+    //             console.log(response);
+    //         })
     //         .then(data => {
-    //             for (var i = 0; i < data.length; i++) {
-    //                 this.state.history = this.state.history.concat([
-    //                     {
-    //                         lidarPoints: data[i]
-    //                     }
-    //                 ]);
-    //             }
-    //             this.state.maximumStepNumber = i;
+    //             this.state.lidarPoints = JSON.parse(data);
+    //             console.log(data);
+    //             console.log(this);
     //         });
     //
     // }
@@ -157,11 +155,12 @@ class lidarPoints extends Component {
     }
 
     renderPointsFromData() {
-        let geometry = new THREE.SphereGeometry(0.005, 4, 4);
-        let material = new THREE.MeshBasicMaterial({color: 0x39ff14});
-
         const scene = document.querySelector('a-scene').object3D;
-        let camera = {x: 0, y: 2, z: 0};
+
+        let geometry = new THREE.SphereGeometry(0.005, 5, 5);
+        let material = new THREE.MeshLambertMaterial({color: 0x39ff14});
+
+        let camera = {x: 0, y: 1, z: 0};
         let spheres = new THREE.Group();
         spheres.name = "Spheres";
 
@@ -183,12 +182,29 @@ class lidarPoints extends Component {
         scene.add(spheres);
     }
 
+    //
+    // loadDataAndMakeEverything(){
+    //     let request = new XMLHttpRequest();
+    //     request.open('GET', '/dataStored/' + this.state.stepNumber, true);  // `false` makes the request synchronous
+    //     request.setRequestHeader('Content-Type', 'application/json');
+    //     let that = this;
+    //     request.onreadystatechange = function () {
+    //         if (request.status === 200 && request.response !== "") {
+    //             that.removeSpheres();
+    //             that.makeBackroundIMG();
+    //             that.state.lidarPoints = JSON.parse(request.response);
+    //             that.renderPointsFromData();
+    //         }
+    //     };
+    //     request.send(null);
+    // }
     render() {
         this.removeSpheres();
         this.makeBackroundIMG();
         this.loadDataFromServer();
         this.renderPointsFromData();
 //         // this.takePicturesfromCameras();
+//          this.loadDataAndMakeEverything();
         return (null);
     }
 }

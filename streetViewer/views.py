@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 globalCounter = 0
-pathForImages = "datastorage/ImagesOfCameras/"
+pathForImages = "datastorage/imagesOfCameras/"
 pathForData = 'C:\\Users\\MSI\\PycharmProjects\\bc\\datastorage\\data-standing\\'
 fileNamePrefix = 'LidarData_'
 fileNameSuffix = '.json'

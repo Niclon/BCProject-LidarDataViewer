@@ -6,21 +6,23 @@
  */
 
 import 'aframe';
-import 'aframe-animation-component';
+// import 'aframe-animation-component';
 import 'aframe-event-set-component';
-import 'aframe-particle-system-component';
+// import 'aframe-particle-system-component';
 import './components/aframe-custom';
-import './components/aframe-environment';
-import './components/aframe-effects';
-import {render} from 'preact';
+// import './components/aframe-environment';
+// import './components/aframe-effects';
+import {render, h} from 'preact';
 import Main from './main';
 import LidarPoints from './lidarPoints';
 // import * as dat from 'dat.gui'
+
 
 var isFrameStopped = false;
 
 var line;
 var scene;
+var lineObjects = [];
 var groupOfLines = new THREE.Group();
 var groupOfPoints = new THREE.Group();
 var groupOfCameras = new THREE.Group();
@@ -29,6 +31,7 @@ var material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 2});
 
 document.addEventListener('DOMContentLoaded', () => {
     render(<Main/>, document.querySelector('#app'));
+    THREE.DragControls = require("three-dragcontrols");
 
 });
 
@@ -296,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         line.renderOrder = 1;
         groupOfLines.add(line);
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
-        camera.position.set(0, 1.6, 0);
+        camera.position.set(0, 0, 0);
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
 
@@ -305,13 +308,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let x = (screenX / window.innerWidth) * 2 - 1;
         let y = -(screenY / window.innerHeight) * 2 + 1;
+        let cameraYOffset = 0.4;
 
         let vNow = new THREE.Vector3(x, y, 0);
         vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
 
-        let length = Math.sqrt(vNow.x ** 2 + (vNow.y - 1.6) ** 2 + vNow.z ** 2);
+        let length = Math.sqrt(vNow.x ** 2 + (vNow.y - cameraYOffset) ** 2 + vNow.z ** 2);
         let scalingFactor = 1.5 / Math.abs(length);
-        return new THREE.Vector3((scalingFactor * vNow.x),((scalingFactor * (vNow.y - 1.6)) + 1.6),(scalingFactor * vNow.z));
+        return new THREE.Vector3((scalingFactor * vNow.x), ((scalingFactor * (vNow.y - cameraYOffset)) + cameraYOffset), (scalingFactor * vNow.z));
         // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
     }
 });

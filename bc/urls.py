@@ -26,8 +26,6 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api-auth/', include('rest_framework.urls')),
-
     url(r'^dataStored/(?P<fileId>\d+)/$', views.dataStored, name='dataStored'),
     url(r'^Images/$',views.getImageData, name='Images'),
     url(r'^$', index),

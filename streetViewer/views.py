@@ -9,25 +9,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 globalCounter = 0
-pathForImages = "ImagesOfCameras/"
+pathForImages = "datastorage/ImagesOfCameras/"
 pathForData = 'C:\\Users\\MSI\\PycharmProjects\\bc\\datastorage\\data-standing\\'
 fileNamePrefix = 'LidarData_'
 fileNameSuffix = '.json'
 
-# Create your views here.def index(request):
-
-# class lidarReader:
-#     lidarPoints = [[0 for x in range(360)] for y in range(20)]
-#
-#
-#
-#     def __init__(self):
-#         self.fillLidarPoints()
-#
-#     def fillLidarPoints(self):
-#         for y in range(0, 20):
-#             for x in range(0, 360):
-#                 self.lidarPoints[y][x] = x + y * 2
 
 def index(request):
     return render(request,"index.html")

@@ -4,7 +4,7 @@
  * It defines the main A-Frame Scene which gets mounted root div.
  */
 
-import {Component} from 'preact';
+import {Component, h} from 'preact';
 import {Entity, Scene} from 'aframe-react';
 import 'react';
 
@@ -219,7 +219,12 @@ class basicScene extends Component {
                 {/*height="100"*/}
                 {/*width="100"*/}
                 {/*/>*/}
-                <Entity primitive="a-camera" camera="active: true" look-controls wasd-controls-enabled="false">
+                <Entity primitive="a-camera"
+                        camera="active: true"
+                        look-controls
+                        position={{x: 0.0, y: 0.4, z: 0.0}}
+                    // wasd-controls-enabled="false"
+                >
                     <Entity
                         primitive="a-cursor"
                         cursor={{fuse: false}}

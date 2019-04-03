@@ -22,27 +22,30 @@ class basicScene extends Component {
                 {/**/}
                 {/*</a-assets>*/}
 
-                <Entity
-                    primitive="a-sky"
-                    height="2048"
-                    radius="30"
-                    src="/static/dist/img/360IMGStreet.jpg"
-                    // theta-length="90"
-                    width="2048"
-
-                />
                 {/*<Entity*/}
-                {/*primitive="a-plane"*/}
-                {/*src="#groundTexture"*/}
-                {/*rotation="-90 0 0"*/}
-                {/*height="100"*/}
-                {/*width="100"*/}
+                {/*primitive="a-sky"*/}
+                {/*height="2048"*/}
+                {/*radius="30"*/}
+                {/*src="/static/dist/img/360IMGStreet.jpg"*/}
+                {/*// theta-length="90"*/}
+                {/*width="2048"*/}
+
                 {/*/>*/}
+                {/*<a-entity material="src: '/static/dist/img/360IMGStreet.jpg'; side: back; shader: flat"*/}
+                {/*geometry="primitive: sphere; radius: 5000; segmentsWidth: 64; segmentsHeight: 32">*/}
+                {/*</a-entity>*/}
+                <Entity
+                    primitive="a-sphere"
+                    src="/static/dist/img/360IMGStreet.jpg"
+                    material={{side: 'back', shader: 'flat'}}
+                    geometry={{radius: 5000, segmentsWidth: 64, segmentsHeight: 32}}
+                />
                 <Entity primitive="a-camera"
                         camera="active: true"
                         look-controls
-                        position="0 0.4 0"
-                    // wasd-controls-enabled="false"
+                    // position="0 0.4 0"
+                        position={{x: 0, y: 0.4, z: 0}}
+                        wasd-controls-enabled="false"
                 >
                     <Entity
                         primitive="a-cursor"

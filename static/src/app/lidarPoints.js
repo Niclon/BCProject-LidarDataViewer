@@ -202,7 +202,7 @@ class lidarPoints extends Component {
     render() {
         this.showLoadingModal();
         this.removeSpheres();
-        this.makeBackroundIMG();
+        // this.makeBackroundIMG();
 //         // this.takePicturesfromCameras();
         this.loadDataFromServerAndRenderPoints();
         return (null);

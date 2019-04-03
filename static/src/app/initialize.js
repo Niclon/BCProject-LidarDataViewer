@@ -277,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scene.object3D.add(groupOfLines);
         scene.object3D.add(groupOfPoints);
         scene.object3D.add(groupOfCameras);
+        document.querySelector('a-camera').setAttribute("position", "0 0.4 0");
     }
 
     //from 2 poitns make rectangle

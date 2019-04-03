@@ -7,7 +7,6 @@ class lidarPoints extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            // lidarPoints: null,
             lidarPoints: null,
             stepNumber: props.stepNumber,
             maximumStepNumber: 0,
@@ -161,13 +160,17 @@ class lidarPoints extends Component {
 
     renderPointsFromData() {
         let scene = document.querySelector('a-scene').object3D;
+        let spheres = scene.getObjectByName("groupOfPoints");
+
+        if (!spheres) {
+            return;
+        }
 
         let geometry = new THREE.SphereGeometry(0.005, 5, 5);
         let material = new THREE.MeshLambertMaterial({color: 0x39ff14});
 
         // let spheres = new THREE.Group();
         // spheres.name = "Spheres";
-        let spheres = scene.getObjectByName("groupOfPoints");
 
         let that = this.state.lidarPoints;
 
@@ -203,10 +206,17 @@ class lidarPoints extends Component {
         this.showLoadingModal();
         this.removeSpheres();
         // this.makeBackroundIMG();
-//         // this.takePicturesfromCameras();
+        // this.takePicturesfromCameras();
+//        todo uncoment this and coment second one
         this.loadDataFromServerAndRenderPoints();
+
+        // this.renderPointsFromData();
+        // this.hideLoadingModal();
+
+
         return (null);
     }
+
 }
 
 export default (lidarPoints)

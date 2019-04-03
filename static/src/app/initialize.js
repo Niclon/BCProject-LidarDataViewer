@@ -20,9 +20,15 @@ import LidarPoints from './lidarPoints';
 
 var isFrameStopped = false;
 
-var line;
 var scene;
+var renderer;
+var mainCamera;
+var dragControls;
+var raycaster = new THREE.Raycaster();
+
+var line;
 var lineObjects = [];
+var additionalCamerasObjects = [];
 var groupOfLines = new THREE.Group();
 var groupOfPoints = new THREE.Group();
 var groupOfCameras = new THREE.Group();
@@ -282,27 +288,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //from 2 poitns make rectangle
     function makeBorder() {
-        let geometry = new THREE.Geometry();
+
+        scene = document.querySelector('a-scene');
+        renderer = scene.renderer;
+        mainCamera = scene.camera;
+        let worldRotation = mainCamera.getWorldRotation();
+
+
         // let firstPoint = groupOfPoints.children[0].position;
         // let secondPoint = groupOfPoints.children[1].position;
         let firstPoint = create3DPoint(startPointX,startPointY);
         let secondPoint = create3DPoint(endPointX,endPointY);
 
-        // console.log(geometry);
-        geometry.vertices.push(firstPoint);
-        geometry.vertices.push(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z));
-        geometry.vertices.push(secondPoint);
-        geometry.vertices.push(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
-        geometry.vertices.push(firstPoint);
+        let xLength;
+        let yLength;
+
+        if (firstPoint.y < secondPoint.y) {
+            yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
+            xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
+        } else {
+            yLength = -(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length());
+            xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
+        }
+
+
+        var rectShape = new THREE.Shape();
+        rectShape.moveTo(0, 0);
+        rectShape.lineTo(0, yLength);
+        rectShape.lineTo(xLength, yLength);
+        rectShape.lineTo(xLength, 0);
+        rectShape.lineTo(0, 0);
+
+        let geometry = rectShape.createPointsGeometry();
+
+
+        // let geometry = new THREE.Geometry();
+        // geometry.vertices.push(firstPoint);
+        // geometry.vertices.push(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z));
+        // geometry.vertices.push(secondPoint);
+        // geometry.vertices.push(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
+        // geometry.vertices.push(firstPoint);
 
         let line = new THREE.Line(geometry, material);
+        line.rotation.set(worldRotation._x, worldRotation._y, worldRotation._z);
+        line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
         // line.frustumCulled = false;
         line.renderOrder = 1;
         groupOfLines.add(line);
+        lineObjects.push(line);
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
         camera.position.set(0, 0, 0);
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
+        additionalCamerasObjects.push(camera);
+
+        if (dragControls) {
+            dragControls.dispose();
+        }
+
+        dragControls = new THREE.DragControls(lineObjects, mainCamera, renderer.domElement);
+        // dragControls.addEventListener( 'touchmove', function () {
+        //     let worldRotation = document.querySelector('a-scene').camera.getWorldRotation();
+        //     line.rotation.set( worldRotation._x, worldRotation._y, worldRotation._z );
+        // })
 
     }
     function create3DPoint(screenX,screenY) {

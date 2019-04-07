@@ -21,13 +21,12 @@ from rest_framework import routers
 from streetViewer import views
 from streetViewer.views import *
 
-#url(r'^', TemplateView.as_view(template_name="index.html")),
 router = routers.DefaultRouter()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^dataStored/(?P<fileId>\d+)/$', views.dataStored, name='dataStored'),
-    url(r'^Images/$',views.getImageData, name='Images'),
+    url(r'^Images/$', views.storeImageData, name='Images'),
     url(r'^$', index),
 
 

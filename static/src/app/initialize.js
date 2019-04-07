@@ -15,10 +15,13 @@ import './components/aframe-custom';
 import {render, h} from 'preact';
 import Main from './main';
 import LidarPoints from './lidarPoints';
+import CustomDragControls from './customDragControls.js';
 // import * as dat from 'dat.gui'
 
 
 var isFrameStopped = false;
+var isDraggingControlEnabled = false;
+var lastStepNumber = -1;
 
 var scene;
 var renderer;
@@ -38,6 +41,7 @@ var material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 2});
 document.addEventListener('DOMContentLoaded', () => {
     render(<Main/>, document.querySelector('#app'));
     THREE.DragControls = require("three-dragcontrols");
+    window.CustomDragControls = CustomDragControls;
 
 });
 
@@ -63,6 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let stepNumber = gui.add(variable, 'stepNumber').min(0).max(220).step(1);
 
     stepNumber.onChange(function (value) {
+        if (value === lastStepNumber) {
+            return;
+        }
+        lastStepNumber = value;
         render(<LidarPoints stepNumber={value}/>, document.querySelector('#lidarPoints'));
 
     });
@@ -80,7 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // document.addEventListener('mousedown', onMouseDown, false);
 
                 isFrameStopped = true;
-                drawingCanvas.style.visibility='visible';
+                drawingCanvas.style.visibility = 'visible';
+                console.log(lineObjects);
+                // console.log(groupOfLines);
+                // console.log(groupOfCameras);
             }
         }
         if (e.altKey) {
@@ -104,12 +115,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 //     isFrameStopped = false;
                 //     scene.play();
                 // }
-                if (endPointX != null && startPointX != null){
+                if (endPointX != null && startPointX != null) {
                     makeBorder();
                     document.querySelector('#scatchPlane').setAttribute('visible', 'false');
                     isFrameStopped = false;
                     scene.play();
                     clearAndHideCanvas();
+                }
+            }
+        }
+        if (e.which === 77) {
+            if (dragControls) {
+                if (isDraggingControlEnabled) {
+                    dragControls.deactivate();
+                    isDraggingControlEnabled = false;
+                } else {
+                    dragControls.activate();
+                    isDraggingControlEnabled = true;
                 }
             }
         }
@@ -154,80 +176,88 @@ document.addEventListener('DOMContentLoaded', () => {
     //     }
     // }
 
-    document.querySelector('#drawingCanvas').addEventListener("mousedown",function(e){
+    document.querySelector('#drawingCanvas').addEventListener("mousedown", function (e) {
         paint = true;
         setEndpointToNull();
         setStartPoint(e);
         redraw();
     });
-    document.querySelector('#drawingCanvas').addEventListener("mousemove",function(e){
-        if(paint){
+    document.querySelector('#drawingCanvas').addEventListener("mousemove", function (e) {
+        if (paint) {
             setEndPoint(e);
             redraw();
         }
     });
-    document.querySelector('#drawingCanvas').addEventListener("mouseup",function(e){
+    document.querySelector('#drawingCanvas').addEventListener("mouseup", function (e) {
         paint = false;
         setEndPoint(e);
-        if (isPointsTooClose()){
+        if (isPointsTooClose()) {
             setEndpointToNull();
             setStartpointToNull();
         }
         redraw();
     });
-    document.querySelector('#drawingCanvas').addEventListener("mouseleave", function(e){
+    document.querySelector('#drawingCanvas').addEventListener("mouseleave", function (e) {
         paint = false;
         setEndpointToNull();
         setStartpointToNull();
         redraw();
     });
-    function redraw(){
+
+    function redraw() {
         context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
         context.strokeStyle = "#df4b26";
         context.lineJoin = "round";
 
         context.lineWidth = 5;
-        if (endPointX){
-            drawLineAndRender(context,startPointX,startPointY,endPointX,startPointY);
-            drawLineAndRender(context,endPointX,startPointY,endPointX,endPointY);
-            drawLineAndRender(context,endPointX,endPointY,startPointX,endPointY);
-            drawLineAndRender(context,startPointX,endPointY,startPointX,startPointY);
+        if (endPointX) {
+            drawLineAndRender(context, startPointX, startPointY, endPointX, startPointY);
+            drawLineAndRender(context, endPointX, startPointY, endPointX, endPointY);
+            drawLineAndRender(context, endPointX, endPointY, startPointX, endPointY);
+            drawLineAndRender(context, startPointX, endPointY, startPointX, startPointY);
         }
     }
-    function drawLineAndRender(context,startPointX,startPointY,endPointX,endPointY){
+
+    function drawLineAndRender(context, startPointX, startPointY, endPointX, endPointY) {
 
         context.beginPath();
-        context.moveTo(startPointX,startPointY);
+        context.moveTo(startPointX, startPointY);
 
-        context.lineTo(endPointX,endPointY);
+        context.lineTo(endPointX, endPointY);
         context.closePath();
         context.stroke();
 
     }
+
     function setEndPoint(e) {
         endPointX = e.pageX;
         endPointY = e.pageY;
     }
+
     function setEndpointToNull() {
         endPointY = null;
         endPointX = null;
     }
+
     function setStartpointToNull() {
         startPointX = null;
         startPointY = null;
     }
+
     function setStartPoint(e) {
         startPointX = e.pageX;
         startPointY = e.pageY;
     }
+
     function isPointsTooClose() {
-        let distance = Math.sqrt(Math.pow(startPointX-endPointX,2) + Math.pow(startPointY-endPointY,2));
-        if (distance < 70){
+        let distance = Math.sqrt(Math.pow(startPointX - endPointX, 2) + Math.pow(startPointY - endPointY, 2));
+        if (distance < 70) {
             return true;
         } else {
             return false
         }
     }
+
     function createDrawingCanvas() {
         var canvasDiv = document.getElementById('drawingCanvasDiv');
         var canvas = document.createElement('canvas');
@@ -235,11 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.setAttribute('height', window.innerHeight);
         canvas.setAttribute('id', 'drawingCanvas');
         canvasDiv.appendChild(canvas);
-        if(typeof G_vmlCanvasManager != 'undefined') {
+        if (typeof G_vmlCanvasManager != 'undefined') {
             canvas = G_vmlCanvasManager.initElement(canvas);
         }
         return canvas.getContext("2d");
     }
+
     function clearAndHideCanvas() {
         context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
         drawingCanvas.style.visibility = 'hidden';
@@ -294,14 +325,29 @@ document.addEventListener('DOMContentLoaded', () => {
         mainCamera = scene.camera;
         let worldRotation = mainCamera.getWorldRotation();
 
+        let firstPoint;
+        let secondPoint;
+        console.log("before call");
 
-        // let firstPoint = groupOfPoints.children[0].position;
-        // let secondPoint = groupOfPoints.children[1].position;
-        let firstPoint = create3DPoint(startPointX,startPointY);
-        let secondPoint = create3DPoint(endPointX,endPointY);
+        restructureSoStartIsInLeftTopCorner();
+
+        console.log("after call");
+        firstPoint = create3DPoint(startPointX, startPointY);
+        secondPoint = create3DPoint(endPointX, endPointY);
+
+        console.log(firstPoint);
+        console.log(secondPoint);
+        console.log(this);
 
         let xLength;
         let yLength;
+
+        // yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
+        // xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
+        // // yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, 0).length();
+        // // xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, 0).length();
+        // // yLength = Math.abs(firstPoint.y) + Math.abs(secondPoint.y);
+        // // xLength = Math.abs(firstPoint.x) + Math.abs(secondPoint.x);
 
         if (firstPoint.y < secondPoint.y) {
             yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
@@ -329,31 +375,38 @@ document.addEventListener('DOMContentLoaded', () => {
         // geometry.vertices.push(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
         // geometry.vertices.push(firstPoint);
 
-        let line = new THREE.Line(geometry, material);
-        line.rotation.set(worldRotation._x, worldRotation._y, worldRotation._z);
-        line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
-        // line.frustumCulled = false;
-        line.renderOrder = 1;
-        groupOfLines.add(line);
-        lineObjects.push(line);
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
         camera.position.set(0, 0, 0);
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
         additionalCamerasObjects.push(camera);
 
+        let line = new THREE.Line(geometry, material);
+        line.rotation.set(worldRotation._x, worldRotation._y, worldRotation._z);
+        line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
+        // line.frustumCulled = false;
+        line.renderOrder = 1;
+        line.userData = {camera: camera, xLength: xLength, yLength: yLength};
+        groupOfLines.add(line);
+        lineObjects.push(line);
+
+
         if (dragControls) {
             dragControls.dispose();
         }
 
-        dragControls = new THREE.DragControls(lineObjects, mainCamera, renderer.domElement);
+        // dragControls = new THREE.DragControls(lineObjects, mainCamera, renderer.domElement);
+        dragControls = new CustomDragControls(lineObjects, mainCamera, renderer.domElement);
+        isDraggingControlEnabled = false;
+        dragControls.deactivate();
         // dragControls.addEventListener( 'touchmove', function () {
         //     let worldRotation = document.querySelector('a-scene').camera.getWorldRotation();
         //     line.rotation.set( worldRotation._x, worldRotation._y, worldRotation._z );
         // })
 
     }
-    function create3DPoint(screenX,screenY) {
+
+    function create3DPoint(screenX, screenY) {
 
         let x = (screenX / window.innerWidth) * 2 - 1;
         let y = -(screenY / window.innerHeight) * 2 + 1;
@@ -363,9 +416,34 @@ document.addEventListener('DOMContentLoaded', () => {
         vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
 
         let length = Math.sqrt(vNow.x ** 2 + (vNow.y - cameraYOffset) ** 2 + vNow.z ** 2);
-        let scalingFactor = 1.5 / Math.abs(length);
+        let scalingFactor = 3 / Math.abs(length);
         return new THREE.Vector3((scalingFactor * vNow.x), ((scalingFactor * (vNow.y - cameraYOffset)) + cameraYOffset), (scalingFactor * vNow.z));
         // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
+    }
+
+    // this is to create two point corners but this create first point in left top corner and second right bottom
+    function restructureSoStartIsInLeftTopCorner() {
+        let temp;
+
+        if (startPointX < endPointX && startPointY > endPointY) {
+            temp = startPointY;
+            startPointY = endPointY;
+            endPointY = temp;
+
+        } else if (startPointX > endPointX && startPointY < endPointY) {
+            temp = endPointX;
+            endPointX = startPointX;
+            startPointX = temp;
+        } else if (startPointX > endPointX && startPointY > endPointY) {
+            temp = endPointX;
+            endPointX = startPointX;
+            startPointX = temp;
+            temp = endPointY;
+            endPointY = startPointY;
+            startPointY = temp;
+        }
+
+        console.log("inside call");
     }
 });
 

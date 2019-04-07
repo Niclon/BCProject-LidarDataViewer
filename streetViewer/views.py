@@ -19,7 +19,7 @@ def index(request):
     return render(request,"index.html")
 
 @csrf_exempt
-def getImageData(request):
+def storeImageData(request):
     dictOfImages =json.loads(request.body)
     global globalCounter
     global pathForImages
@@ -31,6 +31,19 @@ def getImageData(request):
     globalCounter+=1
     return JsonResponse({"success":"true"})
 
+
+@csrf_exempt
+def storeResultData(request):
+    dictOfData = json.loads(request.body)
+    global globalCounter
+    global pathForImages
+    # for one in dictOfData:
+    #     filename = pathForImages + one["key"]+ "_take_" + str(globalCounter)+".png"
+    #     imgData = base64.b64decode( one["value"].partition(",")[2])
+    #     with open(filename,'w') as f:
+    #         f.write(imgData)
+    # globalCounter+=1
+    return JsonResponse({"success": "true"})
 
 
 

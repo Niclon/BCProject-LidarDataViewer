@@ -16,7 +16,7 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
 
     //todo delete
     var geometry = new THREE.SphereGeometry(0.05, 32, 32);
-    var material = new THREE.MeshBasicMaterial({color: 0xffff00});
+    var material = new THREE.MeshBasicMaterial({color: 0xff0000});
     var sphere = new THREE.Mesh(geometry, material);
     sphere.position.set(0, 0, 0);
     document.querySelector('a-scene').object3D.add(sphere);
@@ -149,7 +149,7 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
         event.preventDefault();
 
         if (_selected) {
-
+            sphere = sphere;
             scope.dispatchEvent({type: 'dragend', object: _selected});
 
             _selected = null;
@@ -233,7 +233,8 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
         event.preventDefault();
 
         if (_selected) {
-
+            //todo create camera positioning here
+            sphere = sphere;
             scope.dispatchEvent({type: 'dragend', object: _selected});
 
             _selected = null;

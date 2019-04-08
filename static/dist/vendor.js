@@ -135988,7 +135988,7 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
 
         //todo delete
         var geometry = new THREE.SphereGeometry(0.05, 32, 32);
-        var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    var material = new THREE.MeshBasicMaterial({color: 0xff0000});
         var sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(0, 0, 0);
         document.querySelector('a-scene').object3D.add(sphere);
@@ -136107,7 +136107,7 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
                 event.preventDefault();
 
                 if (_selected) {
-
+                    sphere = sphere;
                         scope.dispatchEvent({ type: 'dragend', object: _selected });
 
                         _selected = null;
@@ -136183,7 +136183,8 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
                 event.preventDefault();
 
                 if (_selected) {
-
+                    //todo create camera positioning here
+                    sphere = sphere;
                         scope.dispatchEvent({ type: 'dragend', object: _selected });
 
                         _selected = null;
@@ -136259,21 +136260,13 @@ var _customDragControls2 = _interopRequireDefault(_customDragControls);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// import * as dat from 'dat.gui'
-
-
-// import './components/aframe-environment';
-// import './components/aframe-effects';
-
-// import 'aframe-animation-component';
-var isFrameStopped = false;
-// import 'aframe-particle-system-component';
-/**
- * @fileoverview
- * This file imports all our required packages.
- * It also includes 3rd party A-Frame components.
- * Finally, it mounts the app to the root node.
- */
+        var isFrameStopped = false;
+        /**
+         * @fileoverview
+         * This file imports all our required packages.
+         * It also includes 3rd party A-Frame components.
+         * Finally, it mounts the app to the root node.
+         */
 
 var isDraggingControlEnabled = false;
 var lastStepNumber = -1;
@@ -136283,8 +136276,9 @@ var renderer;
 var mainCamera;
 var dragControls;
 var raycaster = new THREE.Raycaster();
+        var plane = new THREE.Plane();
 
-var line;
+        var mouse = new THREE.Vector2();
 var lineObjects = [];
 var additionalCamerasObjects = [];
 var groupOfLines = new THREE.Group();
@@ -136580,7 +136574,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log("after call");
         firstPoint = create3DPoint(startPointX, startPointY);
-        secondPoint = create3DPoint(endPointX, endPointY);
+        secondPoint = createSecondPointFromPlane(endPointX, endPointY, firstPoint);
 
         console.log(firstPoint);
         console.log(secondPoint);
@@ -136600,25 +136594,18 @@ document.addEventListener('DOMContentLoaded', function () {
             yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
             xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
         } else {
-            yLength = -new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
-            xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
+            yLength = -firstPoint.distanceTo(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z));
+            xLength = firstPoint.distanceTo(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
         }
 
         var rectShape = new THREE.Shape();
-        rectShape.moveTo(0, 0);
-        rectShape.lineTo(0, yLength);
+        rectShape.moveTo(0, yLength);
         rectShape.lineTo(xLength, yLength);
         rectShape.lineTo(xLength, 0);
         rectShape.lineTo(0, 0);
+        rectShape.lineTo(0, yLength);
 
         var geometry = rectShape.createPointsGeometry();
-
-        // let geometry = new THREE.Geometry();
-        // geometry.vertices.push(firstPoint);
-        // geometry.vertices.push(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z));
-        // geometry.vertices.push(secondPoint);
-        // geometry.vertices.push(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
-        // geometry.vertices.push(firstPoint);
 
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
         camera.position.set(0, 0, 0);
@@ -136643,10 +136630,17 @@ document.addEventListener('DOMContentLoaded', function () {
         dragControls = new _customDragControls2.default(lineObjects, mainCamera, renderer.domElement);
         isDraggingControlEnabled = false;
         dragControls.deactivate();
-        // dragControls.addEventListener( 'touchmove', function () {
-        //     let worldRotation = document.querySelector('a-scene').camera.getWorldRotation();
-        //     line.rotation.set( worldRotation._x, worldRotation._y, worldRotation._z );
-        // })
+    }
+
+    function createSecondPointFromPlane(screenX, screenY, firstpoint) {
+        mouse.x = screenX / window.innerWidth * 2 - 1;
+        mouse.y = -(screenY / window.innerHeight) * 2 + 1;
+        var result = new THREE.Vector3();
+
+        raycaster.setFromCamera(mouse, mainCamera);
+        plane.setFromNormalAndCoplanarPoint(mainCamera.getWorldDirection(plane.normal), firstpoint);
+        raycaster.ray.intersectPlane(plane, result);
+        return result;
     }
 
     function create3DPoint(screenX, screenY) {
@@ -136656,7 +136650,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var cameraYOffset = 0.4;
 
         var vNow = new THREE.Vector3(x, y, 0);
-        vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
+        vNow.unproject(mainCamera);
 
         var length = Math.sqrt(Math.pow(vNow.x, 2) + Math.pow(vNow.y - cameraYOffset, 2) + Math.pow(vNow.z, 2));
         var scalingFactor = 3 / Math.abs(length);

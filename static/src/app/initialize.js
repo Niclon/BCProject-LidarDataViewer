@@ -6,17 +6,12 @@
  */
 
 import 'aframe';
-// import 'aframe-animation-component';
 import 'aframe-event-set-component';
-// import 'aframe-particle-system-component';
 import './components/aframe-custom';
-// import './components/aframe-environment';
-// import './components/aframe-effects';
 import {render, h} from 'preact';
 import Main from './main';
 import LidarPoints from './lidarPoints';
 import CustomDragControls from './customDragControls.js';
-// import * as dat from 'dat.gui'
 
 
 var isFrameStopped = false;
@@ -28,8 +23,9 @@ var renderer;
 var mainCamera;
 var dragControls;
 var raycaster = new THREE.Raycaster();
+var plane = new THREE.Plane();
 
-var line;
+var mouse = new THREE.Vector2();
 var lineObjects = [];
 var additionalCamerasObjects = [];
 var groupOfLines = new THREE.Group();
@@ -333,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log("after call");
         firstPoint = create3DPoint(startPointX, startPointY);
-        secondPoint = create3DPoint(endPointX, endPointY);
+        secondPoint = createSecondPointFromPlane(endPointX, endPointY, firstPoint);
 
         console.log(firstPoint);
         console.log(secondPoint);
@@ -353,27 +349,19 @@ document.addEventListener('DOMContentLoaded', () => {
             yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
             xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
         } else {
-            yLength = -(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length());
-            xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
+            yLength = -(firstPoint.distanceTo(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z)));
+            xLength = firstPoint.distanceTo(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
         }
 
 
         var rectShape = new THREE.Shape();
-        rectShape.moveTo(0, 0);
-        rectShape.lineTo(0, yLength);
+        rectShape.moveTo(0, yLength);
         rectShape.lineTo(xLength, yLength);
         rectShape.lineTo(xLength, 0);
         rectShape.lineTo(0, 0);
+        rectShape.lineTo(0, yLength);
 
         let geometry = rectShape.createPointsGeometry();
-
-
-        // let geometry = new THREE.Geometry();
-        // geometry.vertices.push(firstPoint);
-        // geometry.vertices.push(new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z));
-        // geometry.vertices.push(secondPoint);
-        // geometry.vertices.push(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
-        // geometry.vertices.push(firstPoint);
 
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
         camera.position.set(0, 0, 0);
@@ -399,11 +387,17 @@ document.addEventListener('DOMContentLoaded', () => {
         dragControls = new CustomDragControls(lineObjects, mainCamera, renderer.domElement);
         isDraggingControlEnabled = false;
         dragControls.deactivate();
-        // dragControls.addEventListener( 'touchmove', function () {
-        //     let worldRotation = document.querySelector('a-scene').camera.getWorldRotation();
-        //     line.rotation.set( worldRotation._x, worldRotation._y, worldRotation._z );
-        // })
+    }
 
+    function createSecondPointFromPlane(screenX, screenY, firstpoint) {
+        mouse.x = (screenX / window.innerWidth) * 2 - 1;
+        mouse.y = -(screenY / window.innerHeight) * 2 + 1;
+        var result = new THREE.Vector3();
+
+        raycaster.setFromCamera(mouse, mainCamera);
+        plane.setFromNormalAndCoplanarPoint(mainCamera.getWorldDirection(plane.normal), firstpoint);
+        raycaster.ray.intersectPlane(plane, result);
+        return result;
     }
 
     function create3DPoint(screenX, screenY) {
@@ -413,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let cameraYOffset = 0.4;
 
         let vNow = new THREE.Vector3(x, y, 0);
-        vNow.unproject(document.querySelector('a-camera').object3D.children[2]);
+        vNow.unproject(mainCamera);
 
         let length = Math.sqrt(vNow.x ** 2 + (vNow.y - cameraYOffset) ** 2 + vNow.z ** 2);
         let scalingFactor = 3 / Math.abs(length);

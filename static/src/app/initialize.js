@@ -437,8 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
             endPointY = startPointY;
             startPointY = temp;
         }
-
-        console.log("inside call");
     }
 });
 

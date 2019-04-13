@@ -1,5 +1,6 @@
 import {Component, h} from 'preact'
 import 'react'
+import {CustomFrustum} from "./customFrustum";
 
 var THREE = require('three');
 
@@ -224,6 +225,7 @@ class lidarPoints extends Component {
         if (!lines) {
             return;
         }
+        let that = this;
         if (lines.children.length > 0) {
             let index = 0;
             lines.children.forEach(function (line) {
@@ -234,6 +236,12 @@ class lidarPoints extends Component {
                 vec3 = new THREE.Vector3();
                 plane1 = new THREE.Plane();
                 plane1.setFromCoplanarPoints(vec1, vec2, vec3);
+                let rotationMatrix = that.createRotationMatrix4AroudYAxis(Math.PI);
+
+                plane1.applyMatrix4(rotationMatrix);
+
+                // var helper1 = new THREE.PlaneHelper(plane1, 6, 0xffff00);
+                // scene.add(helper1);
 
                 vec4 = line.position.clone();
                 vec5 = vec4.clone();
@@ -241,6 +249,9 @@ class lidarPoints extends Component {
                 vec6 = new THREE.Vector3();
                 plane2 = new THREE.Plane();
                 plane2.setFromCoplanarPoints(vec4, vec5, vec6);
+
+                // var helper2 = new THREE.PlaneHelper(plane2, 6, 0xffff00);
+                // scene.add(helper2);
 
                 vec7 = line.position.clone();
                 vec7.x = vec7.x + line.userData.xLength;
@@ -250,6 +261,9 @@ class lidarPoints extends Component {
                 plane3 = new THREE.Plane();
                 plane3.setFromCoplanarPoints(vec7, vec8, vec9);
 
+                // var helper3 = new THREE.PlaneHelper(plane3, 6, 0xffff00);
+                // scene.add(helper3);
+
                 vec10 = line.position.clone();
                 vec10.y = vec10.y + line.userData.yLength;
                 vec11 = vec10.clone();
@@ -257,17 +271,24 @@ class lidarPoints extends Component {
                 vec12 = new THREE.Vector3();
                 plane4 = new THREE.Plane();
                 plane4.setFromCoplanarPoints(vec10, vec11, vec12);
-
-                let point = line.userData.camera.getWorldDirection().clone();
-
-                plane5 = new THREE.Plane();
-                plane5.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane5.normal), point.setLength(100));
-
-                plane6 = new THREE.Plane();
-                plane6.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane6.normal), point.clone().setLength(0.2));
+                plane4.applyMatrix4(that.createRotationMatrix4AroudXAxis(Math.PI));
+                plane4.applyMatrix4(that.createRotationMatrix4AroudYAxis(Math.PI));
+                plane4.applyMatrix4(that.createRotationMatrix4AroudZAxis(Math.PI));
+                // var helper4 = new THREE.PlaneHelper(plane4, 6, 0xffff00);
+                // scene.add(helper4);
 
 
-                let frustum = new THREE.Frustum(plane1, plane2, plane3, plane4, plane5, plane6);
+                // let point = line.userData.camera.getWorldDirection().clone();
+                //
+                // plane5 = new THREE.Plane();
+                // plane5.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane5.normal), point.setLength(100));
+                //
+                // plane6 = new THREE.Plane();
+                // plane6.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane6.normal), point.clone().setLength(0.2));
+
+
+                // let frustum = new THREE.Frustum(plane1, plane2, plane3, plane4, plane5, plane6);
+                let frustum = new CustomFrustum(plane1, plane2, plane3, plane4);
 
                 //add line to result
 
@@ -286,6 +307,39 @@ class lidarPoints extends Component {
 
     }
 
+    createRotationMatrix4AroudYAxis(angleInRad) {
+        let rotationMatrix4 = new THREE.Matrix4();
+        rotationMatrix4.set(
+            Math.cos(angleInRad), 0, Math.sin(angleInRad), 0,
+            0, 1, 0, 0,
+            -Math.sin(angleInRad), 0, Math.cos(angleInRad), 0,
+            0, 0, 0, 1
+        );
+        return rotationMatrix4;
+    }
+
+    createRotationMatrix4AroudZAxis(angleInRad) {
+        let rotationMatrix4 = new THREE.Matrix4();
+        rotationMatrix4.set(
+            Math.cos(angleInRad), Math.sin(angleInRad), 0, 0,
+            -Math.sin(angleInRad), Math.cos(angleInRad), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        );
+        return rotationMatrix4;
+    }
+
+    createRotationMatrix4AroudXAxis(angleInRad) {
+        let rotationMatrix4 = new THREE.Matrix4();
+        rotationMatrix4.set(
+            1, 0, 0, 0,
+            0, Math.cos(angleInRad), -Math.sin(angleInRad), 0,
+            0, Math.sin(angleInRad), Math.cos(angleInRad), 0,
+            0, 0, 0, 1
+        );
+        return rotationMatrix4;
+    }
+
     render() {
         this.showLoadingModal();
         this.removeSpheres();
@@ -294,7 +348,7 @@ class lidarPoints extends Component {
 //        todo uncoment this and coment second one
         this.loadDataFromServerAndRenderPoints();
 //         this.sendSelectedDataToBackend();
-//         this.createFrustumForShape();
+        this.createFrustumForShape();
         // this.renderPointsFromData();
         // this.hideLoadingModal();
 

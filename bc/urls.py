@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^dataStored/(?P<fileId>\d+)/$', views.dataStored, name='dataStored'),
     url(r'^Images/$', views.storeImageData, name='Images'),
+    url(r'^SelectedData/$', views.storeResultData, name='SelectedData'),
     url(r'^$', index),
 
 

@@ -120,18 +120,6 @@ class lidarPoints extends Component {
         http.open('POST', '/Images/');
         http.setRequestHeader('Content-type', 'application/json');
         http.send(dataToSend); // Make sure to stringify
-
-        // $.ajax({
-        //        url: '/ajax/Images/',
-        //        cache: false,
-        //        data: {
-        //          'data': dataToSend
-        //        },
-        //        dataType: 'json',
-        //        error: function () {
-        //            console.log("Data to server couldnt be send");
-        //        },
-        //      });
     }
 
     loadDataFromServerAndRenderPoints() {
@@ -144,7 +132,7 @@ class lidarPoints extends Component {
                 that.state.lidarPoints = JSON.parse(request.response);
                 that.renderPointsFromData();
                 that.hideLoadingModal();
-                that.createFrustumForShape();
+                that.getAndSendSelectedDataToBackend();
             }
         };
         request.send(null);
@@ -206,15 +194,14 @@ class lidarPoints extends Component {
         })();
     }
 
-    sendSelectedDataToBackend() {
-
+    getAndSendSelectedDataToBackend() {
+        const http = new XMLHttpRequest();
+        http.open('POST', '/SelectedData/');
+        http.setRequestHeader('Content-type', 'application/json');
+        http.send(JSON.stringify(this.createFrustumForShapeAndGetData()));
     }
 
-    getSelectedData() {
-
-    }
-
-    createFrustumForShape() {
+    createFrustumForShapeAndGetData() {
         let scene = document.querySelector('a-scene').object3D;
         let spheres = scene.getObjectByName("groupOfPoints");
         let lines = scene.getObjectByName('groupOfLines');
@@ -290,12 +277,11 @@ class lidarPoints extends Component {
                         index++;
                     }
                 });
-                console.log(result);
 
             });
 
         }
-
+        return result;
 
     }
 
@@ -345,8 +331,6 @@ class lidarPoints extends Component {
         // this.takePicturesfromCameras();
 //        todo uncoment this and coment second one
         this.loadDataFromServerAndRenderPoints();
-//         this.sendSelectedDataToBackend();
-        this.createFrustumForShape();
         // this.renderPointsFromData();
         // this.hideLoadingModal();
 

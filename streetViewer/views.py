@@ -11,8 +11,10 @@ from rest_framework.response import Response
 globalCounter = 0
 pathForImages = "datastorage/imagesOfCameras/"
 pathForData = 'C:\\Users\\MSI\\PycharmProjects\\bc\\datastorage\\data-standing\\'
+pathForDataStorage = 'datastorage\\selection\\'
 fileNamePrefix = 'LidarData_'
 fileNameSuffix = '.json'
+fileNameSelectionPrefix = 'Selection_'
 
 
 def index(request):
@@ -28,21 +30,19 @@ def storeImageData(request):
         imgData = base64.b64decode( one["value"].partition(",")[2])
         with open(filename,'wb') as f:
             f.write(imgData)
-    globalCounter+=1
+    # globalCounter+=1
     return JsonResponse({"success":"true"})
 
 
 @csrf_exempt
 def storeResultData(request):
-    dictOfData = json.loads(request.body)
+    data = json.loads(request.body)
     global globalCounter
     global pathForImages
-    # for one in dictOfData:
-    #     filename = pathForImages + one["key"]+ "_take_" + str(globalCounter)+".png"
-    #     imgData = base64.b64decode( one["value"].partition(",")[2])
-    #     with open(filename,'w') as f:
-    #         f.write(imgData)
-    # globalCounter+=1
+    fileName = pathForDataStorage + fileNameSelectionPrefix + str(globalCounter) + fileNameSuffix
+    with open(fileName, 'w') as f:
+        f.write(json.dumps(data))
+    globalCounter += 1
     return JsonResponse({"success": "true"})
 
 

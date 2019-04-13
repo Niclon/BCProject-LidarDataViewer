@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
         line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
         // line.frustumCulled = false;
         line.renderOrder = 1;
-        line.userData = {camera: camera, xLength: xLength, yLength: yLength};
+        line.userData = {camera: camera, xLength: xLength, yLength: yLength, name: 'selection_' + lineObjects.length};
         groupOfLines.add(line);
         lineObjects.push(line);
 
@@ -409,10 +409,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let vNow = new THREE.Vector3(x, y, 0);
         vNow.unproject(mainCamera);
 
+        // return vNow.setLength(3);
         let length = Math.sqrt(vNow.x ** 2 + (vNow.y - cameraYOffset) ** 2 + vNow.z ** 2);
         let scalingFactor = 3 / Math.abs(length);
         return new THREE.Vector3((scalingFactor * vNow.x), ((scalingFactor * (vNow.y - cameraYOffset)) + cameraYOffset), (scalingFactor * vNow.z));
-        // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
+        // // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
     }
 
     // this is to create two point corners but this create first point in left top corner and second right bottom

@@ -135973,9 +135973,9 @@ var THREE = require('three');
 
 var CustomDragControls = function CustomDragControls(_objects, _camera, _domElement) {
 
-        var radius = 3;
-        var center = new THREE.Vector3(0, 0.4, 0);
-        var _sphere = new THREE.Sphere(center, radius);
+        var _radius = 3;
+        var _center = new THREE.Vector3(0, 0.4, 0);
+        var _sphere = new THREE.Sphere(_center, _radius);
         var _worldRotation;
         var _raycaster = new THREE.Raycaster();
 
@@ -135983,12 +135983,15 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
         var _offset = new THREE.Vector3();
         var _intersection = new THREE.Vector3();
 
+        var _rotationMatrix = new THREE.Matrix3();
+        var _worldStartingDirection = new THREE.Vector3(0, 0, -1);
+
         var _selected = null,
             _hovered = null;
 
         //todo delete
         var geometry = new THREE.SphereGeometry(0.05, 32, 32);
-    var material = new THREE.MeshBasicMaterial({color: 0xff0000});
+        var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         var sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(0, 0, 0);
         document.querySelector('a-scene').object3D.add(sphere);
@@ -136037,7 +136040,7 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
 
                         if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
 
-                                _selected.position.copy(_intersection.sub(_offset)).setLength(radius);
+                                _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
                                 // _selected.position.copy(_intersection);
                                 _worldRotation = _camera.getWorldRotation();
                                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
@@ -136107,7 +136110,8 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
                 event.preventDefault();
 
                 if (_selected) {
-                    sphere = sphere;
+                        setUpCameraToLookAtMiddleOfSelection();
+
                         scope.dispatchEvent({ type: 'dragend', object: _selected });
 
                         _selected = null;
@@ -136131,7 +136135,7 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
                 if (_selected && scope.enabled) {
 
                         if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
-                                _selected.position.copy(_intersection.sub(_offset)).setLength(radius);
+                                _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
                                 _worldRotation = _camera.getWorldRotation();
                                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
 
@@ -136163,13 +136167,10 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
                 if (intersects.length > 0) {
 
                         _selected = intersects[0].object;
-                        // todo check
-                        // _plane.setFromNormalAndCoplanarPoint(_camera.getWorldDirection(_plane.normal), _selected.position);
 
                         if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
 
                                 _offset.copy(_intersection).sub(_selected.position);
-                                // _offset.copy(_intersection);
                         }
 
                         _domElement.style.cursor = 'move';
@@ -136183,14 +136184,37 @@ var CustomDragControls = function CustomDragControls(_objects, _camera, _domElem
                 event.preventDefault();
 
                 if (_selected) {
-                    //todo create camera positioning here
-                    sphere = sphere;
+                        //todo create camera positioning here
+                        // _selected.userData.worldRotation = _camera.getWorldRotation();
+                        // _selected
+                        setUpCameraToLookAtMiddleOfSelection();
+
                         scope.dispatchEvent({ type: 'dragend', object: _selected });
 
                         _selected = null;
                 }
 
                 _domElement.style.cursor = 'auto';
+        }
+
+        function setUpCameraToLookAtMiddleOfSelection() {
+                var positionOfRotationCenter = _selected.position.clone();
+                var angleOfRotationInRad = _worldStartingDirection.angleTo(positionOfRotationCenter.clone().setY(0));
+
+                // because angleTo calculate smaller one
+                // and is rotated to the further from us and to left
+                // on positive X selection (right side) we need vector to rotate to right in front of us so it would be in the middle of selection
+                if (positionOfRotationCenter.x > 0) {
+                        angleOfRotationInRad = -angleOfRotationInRad;
+                }
+                // rotation matrix around Y axis
+                _rotationMatrix.set(Math.cos(angleOfRotationInRad), 0, Math.sin(angleOfRotationInRad), 0, 1, 0, -Math.sin(angleOfRotationInRad), 0, Math.cos(angleOfRotationInRad));
+                var vectorToWantedCenter = new THREE.Vector3(_selected.userData.xLength / 2, _selected.userData.yLength / 2, 0);
+                vectorToWantedCenter.applyMatrix3(_rotationMatrix);
+                positionOfRotationCenter.add(vectorToWantedCenter);
+                _selected.userData.camera.lookAt(positionOfRotationCenter);
+
+                sphere.position.set(positionOfRotationCenter.x, positionOfRotationCenter.y, positionOfRotationCenter.z);
         }
 
         activate();
@@ -136260,13 +136284,12 @@ var _customDragControls2 = _interopRequireDefault(_customDragControls);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-        var isFrameStopped = false;
-        /**
-         * @fileoverview
-         * This file imports all our required packages.
-         * It also includes 3rd party A-Frame components.
-         * Finally, it mounts the app to the root node.
-         */
+var isFrameStopped = false; /**
+                             * @fileoverview
+                             * This file imports all our required packages.
+                             * It also includes 3rd party A-Frame components.
+                             * Finally, it mounts the app to the root node.
+                             */
 
 var isDraggingControlEnabled = false;
 var lastStepNumber = -1;
@@ -136276,9 +136299,9 @@ var renderer;
 var mainCamera;
 var dragControls;
 var raycaster = new THREE.Raycaster();
-        var plane = new THREE.Plane();
+var plane = new THREE.Plane();
 
-        var mouse = new THREE.Vector2();
+var mouse = new THREE.Vector2();
 var lineObjects = [];
 var additionalCamerasObjects = [];
 var groupOfLines = new THREE.Group();
@@ -136618,7 +136641,7 @@ document.addEventListener('DOMContentLoaded', function () {
         line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
         // line.frustumCulled = false;
         line.renderOrder = 1;
-        line.userData = { camera: camera, xLength: xLength, yLength: yLength };
+        line.userData = { camera: camera, xLength: xLength, yLength: yLength, name: 'selection_' + lineObjects.length };
         groupOfLines.add(line);
         lineObjects.push(line);
 
@@ -136652,10 +136675,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var vNow = new THREE.Vector3(x, y, 0);
         vNow.unproject(mainCamera);
 
+        // return vNow.setLength(3);
         var length = Math.sqrt(Math.pow(vNow.x, 2) + Math.pow(vNow.y - cameraYOffset, 2) + Math.pow(vNow.z, 2));
         var scalingFactor = 3 / Math.abs(length);
         return new THREE.Vector3(scalingFactor * vNow.x, scalingFactor * (vNow.y - cameraYOffset) + cameraYOffset, scalingFactor * vNow.z);
-        // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
+        // // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
     }
 
     // this is to create two point corners but this create first point in left top corner and second right bottom
@@ -136721,6 +136745,7 @@ var lidarPoints = function (_Component) {
 
         _this.state = {
             lidarPoints: null,
+            spheres: null,
             stepNumber: props.stepNumber,
             maximumStepNumber: 0,
             images: ['img/360IMGStreet.jpg', 'img/image1.jpg', 'img/image2.jpg', 'img/image3.jpeg']
@@ -136860,6 +136885,7 @@ var lidarPoints = function (_Component) {
                     that.state.lidarPoints = JSON.parse(request.response);
                     that.renderPointsFromData();
                     that.hideLoadingModal();
+                    that.createFrustumForShape();
                 }
             };
             request.send(null);
@@ -136898,6 +136924,7 @@ var lidarPoints = function (_Component) {
                 sphere.position.set(value[0], value[2], -value[1]);
                 spheres.add(sphere);
             });
+            this.state.spheres = spheres;
             // this.state.lidarPoints.forEach(function (key, value) {
             //     let sphere = new THREE.Mesh(geometry, material);
             //     sphere.position.set(value[0], value[1] + camera.y, value[2]);
@@ -136922,6 +136949,97 @@ var lidarPoints = function (_Component) {
             })();
         }
     }, {
+        key: 'sendSelectedDataToBackend',
+        value: function sendSelectedDataToBackend() {}
+    }, {
+        key: 'getSelectedData',
+        value: function getSelectedData() {}
+    }, {
+        key: 'createFrustumForShape',
+        value: function createFrustumForShape() {
+            var scene = document.querySelector('a-scene').object3D;
+            var spheres = scene.getObjectByName("groupOfPoints");
+            var lines = scene.getObjectByName('groupOfLines');
+            var vec1 = void 0,
+                vec2 = void 0,
+                vec3 = void 0,
+                vec4 = void 0,
+                vec5 = void 0,
+                vec6 = void 0,
+                vec7 = void 0,
+                vec8 = void 0,
+                vec9 = void 0,
+                vec10 = void 0,
+                vec11 = void 0,
+                vec12 = void 0;
+            var plane1 = void 0,
+                plane2 = void 0,
+                plane3 = void 0,
+                plane4 = void 0,
+                plane5 = void 0,
+                plane6 = void 0;
+            var result = {};
+
+            if (!lines) {
+                return;
+            }
+            if (lines.children.length > 0) {
+                var index = 0;
+                lines.children.forEach(function (line) {
+
+                    vec1 = line.position.clone();
+                    vec2 = vec1.clone();
+                    vec2.y = vec2.y + line.userData.yLength;
+                    vec3 = new THREE.Vector3();
+                    plane1 = new THREE.Plane();
+                    plane1.setFromCoplanarPoints(vec1, vec2, vec3);
+
+                    vec4 = line.position.clone();
+                    vec5 = vec4.clone();
+                    vec5.x = vec5.x + line.userData.xLength;
+                    vec6 = new THREE.Vector3();
+                    plane2 = new THREE.Plane();
+                    plane2.setFromCoplanarPoints(vec4, vec5, vec6);
+
+                    vec7 = line.position.clone();
+                    vec7.x = vec7.x + line.userData.xLength;
+                    vec8 = vec7.clone();
+                    vec8.y = vec8.y + line.userData.yLength;
+                    vec9 = new THREE.Vector3();
+                    plane3 = new THREE.Plane();
+                    plane3.setFromCoplanarPoints(vec7, vec8, vec9);
+
+                    vec10 = line.position.clone();
+                    vec10.y = vec10.y + line.userData.yLength;
+                    vec11 = vec10.clone();
+                    vec11.x = vec11.x + line.userData.xLength;
+                    vec12 = new THREE.Vector3();
+                    plane4 = new THREE.Plane();
+                    plane4.setFromCoplanarPoints(vec10, vec11, vec12);
+
+                    var point = line.userData.camera.getWorldDirection().clone();
+
+                    plane5 = new THREE.Plane();
+                    plane5.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane5.normal), point.setLength(100));
+
+                    plane6 = new THREE.Plane();
+                    plane6.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane6.normal), point.clone().setLength(0.2));
+
+                    var frustum = new THREE.Frustum(plane1, plane2, plane3, plane4, plane5, plane6);
+
+                    //add line to result
+
+                    spheres.children.forEach(function (sphere) {
+                        if (frustum.containsPoint(sphere.position)) {
+                            result[index] = sphere.position;
+                            index++;
+                        }
+                    });
+                    console.log(result);
+                });
+            }
+        }
+    }, {
         key: 'render',
         value: function render() {
             this.showLoadingModal();
@@ -136930,7 +137048,8 @@ var lidarPoints = function (_Component) {
             // this.takePicturesfromCameras();
             //        todo uncoment this and coment second one
             this.loadDataFromServerAndRenderPoints();
-
+            //         this.sendSelectedDataToBackend();
+            //         this.createFrustumForShape();
             // this.renderPointsFromData();
             // this.hideLoadingModal();
 

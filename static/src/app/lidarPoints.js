@@ -8,6 +8,7 @@ class lidarPoints extends Component {
         super(props);
         this.state = {
             lidarPoints: null,
+            spheres: null,
             stepNumber: props.stepNumber,
             maximumStepNumber: 0,
             images: ['img/360IMGStreet.jpg', 'img/image1.jpg', 'img/image2.jpg', 'img/image3.jpeg'],
@@ -142,6 +143,7 @@ class lidarPoints extends Component {
                 that.state.lidarPoints = JSON.parse(request.response);
                 that.renderPointsFromData();
                 that.hideLoadingModal();
+                that.createFrustumForShape();
             }
         };
         request.send(null);
@@ -180,6 +182,7 @@ class lidarPoints extends Component {
             sphere.position.set(value[0], value[2], -value[1]);
             spheres.add(sphere);
         });
+        this.state.spheres = spheres;
         // this.state.lidarPoints.forEach(function (key, value) {
         //     let sphere = new THREE.Mesh(geometry, material);
         //     sphere.position.set(value[0], value[1] + camera.y, value[2]);
@@ -202,6 +205,87 @@ class lidarPoints extends Component {
         })();
     }
 
+    sendSelectedDataToBackend() {
+
+    }
+
+    getSelectedData() {
+
+    }
+
+    createFrustumForShape() {
+        let scene = document.querySelector('a-scene').object3D;
+        let spheres = scene.getObjectByName("groupOfPoints");
+        let lines = scene.getObjectByName('groupOfLines');
+        let vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8, vec9, vec10, vec11, vec12;
+        let plane1, plane2, plane3, plane4, plane5, plane6;
+        let result = {};
+
+        if (!lines) {
+            return;
+        }
+        if (lines.children.length > 0) {
+            let index = 0;
+            lines.children.forEach(function (line) {
+
+                vec1 = line.position.clone();
+                vec2 = vec1.clone();
+                vec2.y = vec2.y + line.userData.yLength;
+                vec3 = new THREE.Vector3();
+                plane1 = new THREE.Plane();
+                plane1.setFromCoplanarPoints(vec1, vec2, vec3);
+
+                vec4 = line.position.clone();
+                vec5 = vec4.clone();
+                vec5.x = vec5.x + line.userData.xLength;
+                vec6 = new THREE.Vector3();
+                plane2 = new THREE.Plane();
+                plane2.setFromCoplanarPoints(vec4, vec5, vec6);
+
+                vec7 = line.position.clone();
+                vec7.x = vec7.x + line.userData.xLength;
+                vec8 = vec7.clone();
+                vec8.y = vec8.y + line.userData.yLength;
+                vec9 = new THREE.Vector3();
+                plane3 = new THREE.Plane();
+                plane3.setFromCoplanarPoints(vec7, vec8, vec9);
+
+                vec10 = line.position.clone();
+                vec10.y = vec10.y + line.userData.yLength;
+                vec11 = vec10.clone();
+                vec11.x = vec11.x + line.userData.xLength;
+                vec12 = new THREE.Vector3();
+                plane4 = new THREE.Plane();
+                plane4.setFromCoplanarPoints(vec10, vec11, vec12);
+
+                let point = line.userData.camera.getWorldDirection().clone();
+
+                plane5 = new THREE.Plane();
+                plane5.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane5.normal), point.setLength(100));
+
+                plane6 = new THREE.Plane();
+                plane6.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane6.normal), point.clone().setLength(0.2));
+
+
+                let frustum = new THREE.Frustum(plane1, plane2, plane3, plane4, plane5, plane6);
+
+                //add line to result
+
+                spheres.children.forEach(function (sphere) {
+                    if (frustum.containsPoint(sphere.position)) {
+                        result[index] = sphere.position;
+                        index++;
+                    }
+                });
+                console.log(result);
+
+            });
+
+        }
+
+
+    }
+
     render() {
         this.showLoadingModal();
         this.removeSpheres();
@@ -209,7 +293,8 @@ class lidarPoints extends Component {
         // this.takePicturesfromCameras();
 //        todo uncoment this and coment second one
         this.loadDataFromServerAndRenderPoints();
-
+//         this.sendSelectedDataToBackend();
+//         this.createFrustumForShape();
         // this.renderPointsFromData();
         // this.hideLoadingModal();
 

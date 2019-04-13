@@ -2,15 +2,18 @@ var THREE = require('three');
 
 var CustomDragControls = function (_objects, _camera, _domElement) {
 
-    var radius = 3;
-    const center = new THREE.Vector3(0, 0.4, 0);
-    var _sphere = new THREE.Sphere(center, radius);
+    var _radius = 3;
+    const _center = new THREE.Vector3(0, 0.4, 0);
+    var _sphere = new THREE.Sphere(_center, _radius);
     var _worldRotation;
     var _raycaster = new THREE.Raycaster();
 
     var _mouse = new THREE.Vector2();
     var _offset = new THREE.Vector3();
     var _intersection = new THREE.Vector3();
+
+    var _rotationMatrix = new THREE.Matrix3();
+    var _worldStartingDirection = new THREE.Vector3(0, 0, -1);
 
     var _selected = null, _hovered = null;
 
@@ -68,7 +71,7 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
 
             if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
 
-                _selected.position.copy(_intersection.sub(_offset)).setLength(radius);
+                _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
                 // _selected.position.copy(_intersection);
                 _worldRotation = _camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
@@ -149,7 +152,8 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
         event.preventDefault();
 
         if (_selected) {
-            sphere = sphere;
+            setUpCameraToLookAtMiddleOfSelection();
+
             scope.dispatchEvent({type: 'dragend', object: _selected});
 
             _selected = null;
@@ -175,7 +179,7 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
         if (_selected && scope.enabled) {
 
             if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
-                _selected.position.copy(_intersection.sub(_offset)).setLength(radius);
+                _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
                 _worldRotation = _camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
 
@@ -210,13 +214,11 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
         if (intersects.length > 0) {
 
             _selected = intersects[0].object;
-            // todo check
-            // _plane.setFromNormalAndCoplanarPoint(_camera.getWorldDirection(_plane.normal), _selected.position);
 
             if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
 
                 _offset.copy(_intersection).sub(_selected.position);
-                // _offset.copy(_intersection);
+
             }
 
             _domElement.style.cursor = 'move';
@@ -234,7 +236,10 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
 
         if (_selected) {
             //todo create camera positioning here
-            sphere = sphere;
+            // _selected.userData.worldRotation = _camera.getWorldRotation();
+            // _selected
+            setUpCameraToLookAtMiddleOfSelection();
+            
             scope.dispatchEvent({type: 'dragend', object: _selected});
 
             _selected = null;
@@ -243,6 +248,30 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
 
         _domElement.style.cursor = 'auto';
 
+    }
+
+    function setUpCameraToLookAtMiddleOfSelection() {
+        let positionOfRotationCenter = _selected.position.clone();
+        let angleOfRotationInRad = _worldStartingDirection.angleTo(positionOfRotationCenter.clone().setY(0));
+
+        // because angleTo calculate smaller one
+        // and is rotated to the further from us and to left
+        // on positive X selection (right side) we need vector to rotate to right in front of us so it would be in the middle of selection
+        if (positionOfRotationCenter.x > 0) {
+            angleOfRotationInRad = -angleOfRotationInRad;
+        }
+        // rotation matrix around Y axis
+        _rotationMatrix.set(
+            Math.cos(angleOfRotationInRad), 0, Math.sin(angleOfRotationInRad),
+            0, 1, 0,
+            -Math.sin(angleOfRotationInRad), 0, Math.cos(angleOfRotationInRad)
+        );
+        let vectorToWantedCenter = new THREE.Vector3(_selected.userData.xLength / 2, _selected.userData.yLength / 2, 0);
+        vectorToWantedCenter.applyMatrix3(_rotationMatrix);
+        positionOfRotationCenter.add(vectorToWantedCenter);
+        _selected.userData.camera.lookAt(positionOfRotationCenter);
+
+        sphere.position.set(positionOfRotationCenter.x, positionOfRotationCenter.y, positionOfRotationCenter.z);
     }
 
     activate();

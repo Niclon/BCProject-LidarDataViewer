@@ -219,7 +219,7 @@ class lidarPoints extends Component {
         let spheres = scene.getObjectByName("groupOfPoints");
         let lines = scene.getObjectByName('groupOfLines');
         let vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8, vec9, vec10, vec11, vec12;
-        let plane1, plane2, plane3, plane4, plane5, plane6;
+        let plane1, plane2, plane3, plane4;
         let result = {};
 
         if (!lines) {
@@ -232,7 +232,7 @@ class lidarPoints extends Component {
 
                 vec1 = line.position.clone();
                 vec2 = vec1.clone();
-                vec2.y = vec2.y + line.userData.yLength;
+                vec2.y += line.userData.yLength;
                 vec3 = new THREE.Vector3();
                 plane1 = new THREE.Plane();
                 plane1.setFromCoplanarPoints(vec1, vec2, vec3);
@@ -244,8 +244,7 @@ class lidarPoints extends Component {
                 // scene.add(helper1);
 
                 vec4 = line.position.clone();
-                vec5 = vec4.clone();
-                vec5.x = vec5.x + line.userData.xLength;
+                vec5 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength, 0, 0), line);
                 vec6 = new THREE.Vector3();
                 plane2 = new THREE.Plane();
                 plane2.setFromCoplanarPoints(vec4, vec5, vec6);
@@ -253,10 +252,8 @@ class lidarPoints extends Component {
                 // var helper2 = new THREE.PlaneHelper(plane2, 6, 0xffff00);
                 // scene.add(helper2);
 
-                vec7 = line.position.clone();
-                vec7.x = vec7.x + line.userData.xLength;
-                vec8 = vec7.clone();
-                vec8.y = vec8.y + line.userData.yLength;
+                vec7 = vec5.clone();
+                vec8 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength, line.userData.yLength, 0), line);
                 vec9 = new THREE.Vector3();
                 plane3 = new THREE.Plane();
                 plane3.setFromCoplanarPoints(vec7, vec8, vec9);
@@ -265,33 +262,28 @@ class lidarPoints extends Component {
                 // scene.add(helper3);
 
                 vec10 = line.position.clone();
-                vec10.y = vec10.y + line.userData.yLength;
-                vec11 = vec10.clone();
-                vec11.x = vec11.x + line.userData.xLength;
+                vec10.y += line.userData.yLength;
+                vec11 = vec8.clone();
                 vec12 = new THREE.Vector3();
                 plane4 = new THREE.Plane();
                 plane4.setFromCoplanarPoints(vec10, vec11, vec12);
                 plane4.applyMatrix4(that.createRotationMatrix4AroudXAxis(Math.PI));
                 plane4.applyMatrix4(that.createRotationMatrix4AroudYAxis(Math.PI));
                 plane4.applyMatrix4(that.createRotationMatrix4AroudZAxis(Math.PI));
+
                 // var helper4 = new THREE.PlaneHelper(plane4, 6, 0xffff00);
                 // scene.add(helper4);
 
-
-                // let point = line.userData.camera.getWorldDirection().clone();
-                //
-                // plane5 = new THREE.Plane();
-                // plane5.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane5.normal), point.setLength(100));
-                //
-                // plane6 = new THREE.Plane();
-                // plane6.setFromNormalAndCoplanarPoint(line.userData.camera.getWorldDirection(plane6.normal), point.clone().setLength(0.2));
-
-
-                // let frustum = new THREE.Frustum(plane1, plane2, plane3, plane4, plane5, plane6);
                 let frustum = new CustomFrustum(plane1, plane2, plane3, plane4);
 
                 //add line to result
-
+                let lineForRecreation = {
+                    position: line.position,
+                    rotationEuler: line.rotation,
+                    xLength: line.userData.xLength,
+                    yLength: line.userData.yLength
+                };
+                result[line.userData.name] = lineForRecreation;
                 spheres.children.forEach(function (sphere) {
                     if (frustum.containsPoint(sphere.position)) {
                         result[index] = sphere.position;
@@ -305,6 +297,12 @@ class lidarPoints extends Component {
         }
 
 
+    }
+
+    rotateVectorAndReturnPosition(vector, line) {
+        let positionOfRotationCenter = line.position.clone();
+        vector.applyEuler(line.rotation.clone());
+        return positionOfRotationCenter.add(vector);
     }
 
     createRotationMatrix4AroudYAxis(angleInRad) {

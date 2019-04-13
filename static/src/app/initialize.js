@@ -17,6 +17,7 @@ import CustomDragControls from './customDragControls.js';
 var isFrameStopped = false;
 var isDraggingControlEnabled = false;
 var lastStepNumber = -1;
+var selectionCounter = 0;
 
 var scene;
 var renderer;
@@ -323,11 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let firstPoint;
         let secondPoint;
-        console.log("before call");
 
         restructureSoStartIsInLeftTopCorner();
 
-        console.log("after call");
         firstPoint = create3DPoint(startPointX, startPointY);
         secondPoint = createSecondPointFromPlane(endPointX, endPointY, firstPoint);
 
@@ -374,7 +373,8 @@ document.addEventListener('DOMContentLoaded', () => {
         line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
         // line.frustumCulled = false;
         line.renderOrder = 1;
-        line.userData = {camera: camera, xLength: xLength, yLength: yLength, name: 'selection_' + lineObjects.length};
+        line.userData = {camera: camera, xLength: xLength, yLength: yLength, name: 'selection_' + selectionCounter};
+        selectionCounter += 1;
         groupOfLines.add(line);
         lineObjects.push(line);
 

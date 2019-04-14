@@ -26,8 +26,10 @@ router = routers.DefaultRouter()
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^dataStored/(?P<fileId>\d+)/$', views.dataStored, name='dataStored'),
+    url(r'^dataStoredReplay/(?P<fileId>\d+)/$', views.dataStoredReplay, name='dataStoredReplay'),
     url(r'^Images/$', views.storeImageData, name='Images'),
     url(r'^SelectedData/$', views.storeResultData, name='SelectedData'),
+    url(r'^replay/$', views.replay, name='replayPage'),
     url(r'^$', index),
 
 

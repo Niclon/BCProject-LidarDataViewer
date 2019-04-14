@@ -9,9 +9,8 @@ class lidarPoints extends Component {
         super(props);
         this.state = {
             lidarPoints: null,
-            spheres: null,
             stepNumber: props.stepNumber,
-            maximumStepNumber: 0,
+            isReplay: props.isReplay,
             images: ['img/360IMGStreet.jpg', 'img/image1.jpg', 'img/image2.jpg', 'img/image3.jpeg'],
         };
     }
@@ -35,6 +34,12 @@ class lidarPoints extends Component {
         let selectedObject = scenel.getObjectByName("groupOfPoints");
         if (selectedObject) {
             selectedObject.children = [];
+        }
+        if (this.state.isReplay) {
+            let lines = scenel.getObjectByName("groupOfLines");
+            if (selectedObject) {
+                lines.children = [];
+            }
         }
     }
 
@@ -125,14 +130,23 @@ class lidarPoints extends Component {
     loadDataFromServerAndRenderPoints() {
         let that = this;
         let request = new XMLHttpRequest();
-        request.open('GET', '/dataStored/' + this.state.stepNumber, true);  // `false` makes the request synchronous
+        if (this.state.isReplay) {
+            request.open('GET', '/dataStoredReplay/' + this.state.stepNumber, true);  // `false` makes the request synchronous
+        } else {
+            request.open('GET', '/dataStored/' + this.state.stepNumber, true);  // `false` makes the request synchronous
+        }
+
+
         request.setRequestHeader('Content-Type', 'application/json');
         request.onreadystatechange = function () {
             if (request.readyState === 4 && request.status === 200) {
+                console.log(request.response);
                 that.state.lidarPoints = JSON.parse(request.response);
                 that.renderPointsFromData();
                 that.hideLoadingModal();
-                that.getAndSendSelectedDataToBackend();
+                if (!that.state.isReplay) {
+                    that.getAndSendSelectedDataToBackend();
+                }
             }
         };
         request.send(null);
@@ -163,15 +177,67 @@ class lidarPoints extends Component {
         // let spheres = new THREE.Group();
         // spheres.name = "Spheres";
 
-        let that = this.state.lidarPoints;
+        let that = this;
+        let thatPoints = this.state.lidarPoints;
+        if (that.state.isReplay) {
+            thatPoints = JSON.parse(thatPoints);
+        }
+        console.log(thatPoints);
 
-        Object.keys(this.state.lidarPoints).forEach(function (key) {
-            let value = that[key];
+        for (let index in thatPoints) {
+            if (that.state.isReplay) {
+                let current = thatPoints[index];
+                for (let innerOne in current) {
+                    let value = current[innerOne];
+                    if (innerOne.toLowerCase().indexOf("line") >= 0) {
+                        that.createBorderAndRotate(value);
+                        continue;
+                    }
+                    let sphere = new THREE.Mesh(geometry, material);
+                    sphere.position.set(value.x, value.y, value.z);
+                    spheres.add(sphere);
+                }
+                continue;
+            }
+            let value = thatPoints[index];
             let sphere = new THREE.Mesh(geometry, material);
             sphere.position.set(value[0], value[2], -value[1]);
             spheres.add(sphere);
-        });
-        this.state.spheres = spheres;
+        }
+
+        // Object.keys(this.state.lidarPoints).forEach(function (key) {
+        //     //for replay only
+        //     if (that.state.isReplay) {
+        //         // let innerOne = thatPoints[key];
+        //         // Object.keys(innerOne).forEach(function (keyInner) {
+        //         //     if (keyInner.toLowerCase().indexOf("line") >= 0) {
+        //         //         console.log(keyInner);
+        //         //         that.createBorderAndRotate(innerOne[keyInner]);
+        //         //         return;
+        //         //     }
+        //         //     let value = innerOne[keyInner];
+        //         //     console.log(value);
+        //         //     let sphere = new THREE.Mesh(geometry, material);
+        //         //     sphere.position.set(value.x, value.y, value.z);
+        //         //     spheres.add(sphere);
+        //         // });
+        //         let value = thatPoints[key];
+        //         if (key.toLowerCase().indexOf("line") >= 0) {
+        //             console.log(keyInner);
+        //             that.createBorderAndRotate(value);
+        //             return;
+        //         }
+        //         let sphere = new THREE.Mesh(geometry, material);
+        //         sphere.position.set(value.x, value.y, value.z);
+        //         spheres.add(sphere);
+        //         return;
+        //     }
+        //     let value = thatPoints[key];
+        //     let sphere = new THREE.Mesh(geometry, material);
+        //     sphere.position.set(value[0], value[2], -value[1]);
+        //     spheres.add(sphere);
+        // });
+        // this.state.spheres = spheres;
         // this.state.lidarPoints.forEach(function (key, value) {
         //     let sphere = new THREE.Mesh(geometry, material);
         //     sphere.position.set(value[0], value[1] + camera.y, value[2]);
@@ -180,6 +246,29 @@ class lidarPoints extends Component {
 
 
         // scene.add(spheres);
+    }
+
+    createBorderAndRotate(line) {
+        let lines = document.querySelector('a-scene').object3D.getObjectByName("groupOfLines");
+        console.log(line);
+        let borderLine = this.create3DLineBorder(line.xLength, line.yLength);
+        borderLine.position.set(line.position.x, line.position.y, line.position.z);
+        borderLine.rotation.set(line.rotationEuler._x, line.rotationEuler._y, line.rotationEuler._z);
+        lines.add(borderLine);
+
+    }
+
+    create3DLineBorder(xLength, yLength) {
+        var rectShape = new THREE.Shape();
+        rectShape.moveTo(0, yLength);
+        rectShape.lineTo(xLength, yLength);
+        rectShape.lineTo(xLength, 0);
+        rectShape.lineTo(0, 0);
+        rectShape.lineTo(0, yLength);
+
+        let geometry = rectShape.createPointsGeometry();
+        let material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 2});
+        return new THREE.Line(geometry, material);
     }
 
     showLoadingModal() {
@@ -195,6 +284,7 @@ class lidarPoints extends Component {
     }
 
     getAndSendSelectedDataToBackend() {
+        console.log('beforeCall');
         const http = new XMLHttpRequest();
         http.open('POST', '/SelectedData/');
         http.setRequestHeader('Content-type', 'application/json');
@@ -206,7 +296,7 @@ class lidarPoints extends Component {
         let spheres = scene.getObjectByName("groupOfPoints");
         let lines = scene.getObjectByName('groupOfLines');
         let vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8, vec9, vec10, vec11, vec12;
-        let plane1, plane2, plane3, plane4;
+        var plane1, plane2, plane3, plane4;
         let result = {};
 
         if (!lines) {
@@ -227,6 +317,7 @@ class lidarPoints extends Component {
 
                 plane1.applyMatrix4(rotationMatrix);
 
+                console.log(plane1);
                 // var helper1 = new THREE.PlaneHelper(plane1, 6, 0xffff00);
                 // scene.add(helper1);
 
@@ -236,6 +327,7 @@ class lidarPoints extends Component {
                 plane2 = new THREE.Plane();
                 plane2.setFromCoplanarPoints(vec4, vec5, vec6);
 
+                console.log(plane2);
                 // var helper2 = new THREE.PlaneHelper(plane2, 6, 0xffff00);
                 // scene.add(helper2);
 
@@ -245,6 +337,7 @@ class lidarPoints extends Component {
                 plane3 = new THREE.Plane();
                 plane3.setFromCoplanarPoints(vec7, vec8, vec9);
 
+                console.log(plane3);
                 // var helper3 = new THREE.PlaneHelper(plane3, 6, 0xffff00);
                 // scene.add(helper3);
 
@@ -254,12 +347,15 @@ class lidarPoints extends Component {
                 vec12 = new THREE.Vector3();
                 plane4 = new THREE.Plane();
                 plane4.setFromCoplanarPoints(vec10, vec11, vec12);
-                plane4.applyMatrix4(that.createRotationMatrix4AroudXAxis(Math.PI));
-                plane4.applyMatrix4(that.createRotationMatrix4AroudYAxis(Math.PI));
-                plane4.applyMatrix4(that.createRotationMatrix4AroudZAxis(Math.PI));
+                // plane4.applyMatrix4(that.createRotationMatrix4AroudXAxis(Math.PI));
+                // plane4.applyMatrix4(that.createRotationMatrix4AroudYAxis(Math.PI));
+                // plane4.applyMatrix4(that.createRotationMatrix4AroudZAxis(Math.PI));
+                plane4.normal.negate();
 
-                // var helper4 = new THREE.PlaneHelper(plane4, 6, 0xffff00);
-                // scene.add(helper4);
+                var helper4 = new THREE.PlaneHelper(plane4, 6, 0xffff00);
+                scene.add(helper4);
+                console.log(plane4);
+
 
                 let frustum = new CustomFrustum(plane1, plane2, plane3, plane4);
 
@@ -270,17 +366,22 @@ class lidarPoints extends Component {
                     xLength: line.userData.xLength,
                     yLength: line.userData.yLength
                 };
-                result[line.userData.name] = lineForRecreation;
+                let eachResult = {};
+                eachResult.line = lineForRecreation;
                 spheres.children.forEach(function (sphere) {
                     if (frustum.containsPoint(sphere.position)) {
-                        result[index] = sphere.position;
+                        eachResult[index] = sphere.position;
                         index++;
                     }
                 });
+                let name = 'LidarData_' + that.state.stepNumber + line.userData.name;
+                console.log(eachResult);
+                result[name] = eachResult;
 
             });
 
         }
+        console.log(result);
         return result;
 
     }

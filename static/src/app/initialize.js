@@ -330,19 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
         firstPoint = create3DPoint(startPointX, startPointY);
         secondPoint = createSecondPointFromPlane(endPointX, endPointY, firstPoint);
 
-        console.log(firstPoint);
-        console.log(secondPoint);
-        console.log(this);
 
         let xLength;
         let yLength;
-
-        // yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
-        // xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z).length();
-        // // yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, 0).length();
-        // // xLength = new THREE.Vector3(secondPoint.x, firstPoint.y, 0).length();
-        // // yLength = Math.abs(firstPoint.y) + Math.abs(secondPoint.y);
-        // // xLength = Math.abs(firstPoint.x) + Math.abs(secondPoint.x);
 
         if (firstPoint.y < secondPoint.y) {
             yLength = new THREE.Vector3(firstPoint.x, secondPoint.y, firstPoint.z).length();
@@ -353,27 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        var rectShape = new THREE.Shape();
-        rectShape.moveTo(0, yLength);
-        rectShape.lineTo(xLength, yLength);
-        rectShape.lineTo(xLength, 0);
-        rectShape.lineTo(0, 0);
-        rectShape.lineTo(0, yLength);
-
-        let geometry = rectShape.createPointsGeometry();
-
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
         camera.position.set(0, 0, 0);
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
         additionalCamerasObjects.push(camera);
 
-        let line = new THREE.Line(geometry, material);
+        let line = create3DLine(xLength, yLength);
         line.rotation.set(worldRotation._x, worldRotation._y, worldRotation._z);
         line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
         // line.frustumCulled = false;
         line.renderOrder = 1;
-        line.userData = {camera: camera, xLength: xLength, yLength: yLength, name: 'selection_' + selectionCounter};
+        line.userData = {camera: camera, xLength: xLength, yLength: yLength, name: '_Selection_' + selectionCounter};
         selectionCounter += 1;
         groupOfLines.add(line);
         lineObjects.push(line);
@@ -387,6 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
         dragControls = new CustomDragControls(lineObjects, mainCamera, renderer.domElement);
         isDraggingControlEnabled = false;
         dragControls.deactivate();
+    }
+
+    function create3DLine(xLength, yLength) {
+        var rectShape = new THREE.Shape();
+        rectShape.moveTo(0, yLength);
+        rectShape.lineTo(xLength, yLength);
+        rectShape.lineTo(xLength, 0);
+        rectShape.lineTo(0, 0);
+        rectShape.lineTo(0, yLength);
+
+        let geometry = rectShape.createPointsGeometry();
+        return new THREE.Line(geometry, material);
     }
 
     function createSecondPointFromPlane(screenX, screenY, firstpoint) {

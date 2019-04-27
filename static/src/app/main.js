@@ -1,27 +1,16 @@
-/**
- * @fileoverview
- * This is our main A-Frame application.
- * It defines the main A-Frame Scene which gets mounted root div.
- */
-
 import {Component, h} from 'preact';
 import {Entity, Scene} from 'aframe-react';
-import 'react';
+
+// import 'react';
 
 class basicScene extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
     }
 
     render() {
         return (
             <Scene vr-mode-ui="enabled: false">
-                {/*<a-assets>*/}
-                {/*<img crossOrigin id="groundTexture" src="img/floor.jpg" />*/}
-                {/*<img crossOrigin id="skyTexture" src="img/sky.jpg" />*/}
-                {/**/}
-                {/*</a-assets>*/}
-
                 {/*<Entity*/}
                 {/*primitive="a-sky"*/}
                 {/*height="2048"*/}
@@ -43,7 +32,6 @@ class basicScene extends Component {
                 <Entity primitive="a-camera"
                         camera="active: true"
                         look-controls
-                    // position="0 0.4 0"
                         position={{x: 0, y: 0.4, z: 0}}
                         wasd-controls-enabled="false"
                 >
@@ -55,11 +43,8 @@ class basicScene extends Component {
                     />
                     <Entity id={'scatchPlane'} primitive="a-plane" width={4} height={2} position="0 0 -1.5"
                             material={{color: 'transparent', wireframe: true}} visible={false}></Entity>
-                    {/*<Entity id={'scatchPlane1'} planeComp={{}} primitive="a-plane" width={4} height={2} position={{z:-1.5}} material={{color: 'transparent', wireframe: true}} visible={false}></Entity>*/}
                 </Entity>
                 <Entity id="lidarPoints"/>
-                <a-entity oculus-touch-controls x-button-listener id="refresh-button" geometry="primitive: box"
-                          material="color: red" position="-2 0 -2"></a-entity>
             </Scene>
         )
     }

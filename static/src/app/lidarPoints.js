@@ -15,20 +15,6 @@ class lidarPoints extends Component {
         };
     }
 
-    // componentDidMount() {
-    //     fetch('http://127.0.0.1:8000/datastored/' + this.props.stepNumber)
-    //         .then(response => {
-    //             response.json();
-    //             console.log(response);
-    //         })
-    //         .then(data => {
-    //             this.state.lidarPoints = JSON.parse(data);
-    //             console.log(data);
-    //             console.log(this);
-    //         });
-    //
-    // }
-
     removeSpheres() {
         let scenel = document.querySelector('a-scene').object3D;
         let selectedObject = scenel.getObjectByName("groupOfPoints");
@@ -150,17 +136,6 @@ class lidarPoints extends Component {
             }
         };
         request.send(null);
-
-
-        // $.ajax({
-        //     url: 'dataStored/' + this.state.stepNumber,
-        //     async: false,
-        //     dataType: 'json',
-        //     success: function (response) {
-        //         // do stuff with response.
-        //         this.state.lidarPoints = response;
-        //     }
-        // });rendere
     }
 
     renderPointsFromData() {
@@ -182,7 +157,7 @@ class lidarPoints extends Component {
         if (that.state.isReplay) {
             thatPoints = JSON.parse(thatPoints);
         }
-        console.log(thatPoints);
+        // console.log(thatPoints);
 
         for (let index in thatPoints) {
             if (that.state.isReplay) {
@@ -284,7 +259,6 @@ class lidarPoints extends Component {
     }
 
     getAndSendSelectedDataToBackend() {
-        console.log('beforeCall');
         const http = new XMLHttpRequest();
         http.open('POST', '/SelectedData/');
         http.setRequestHeader('Content-type', 'application/json');
@@ -317,7 +291,7 @@ class lidarPoints extends Component {
 
                 plane1.applyMatrix4(rotationMatrix);
 
-                console.log(plane1);
+                // console.log(plane1);
                 // var helper1 = new THREE.PlaneHelper(plane1, 6, 0xffff00);
                 // scene.add(helper1);
 
@@ -327,7 +301,7 @@ class lidarPoints extends Component {
                 plane2 = new THREE.Plane();
                 plane2.setFromCoplanarPoints(vec4, vec5, vec6);
 
-                console.log(plane2);
+                // console.log(plane2);
                 // var helper2 = new THREE.PlaneHelper(plane2, 6, 0xffff00);
                 // scene.add(helper2);
 
@@ -337,7 +311,7 @@ class lidarPoints extends Component {
                 plane3 = new THREE.Plane();
                 plane3.setFromCoplanarPoints(vec7, vec8, vec9);
 
-                console.log(plane3);
+                // console.log(plane3);
                 // var helper3 = new THREE.PlaneHelper(plane3, 6, 0xffff00);
                 // scene.add(helper3);
 
@@ -352,11 +326,11 @@ class lidarPoints extends Component {
                 // plane4.applyMatrix4(that.createRotationMatrix4AroudZAxis(Math.PI));
                 plane4.normal.negate();
 
-                var helper4 = new THREE.PlaneHelper(plane4, 6, 0xffff00);
-                scene.add(helper4);
-                console.log(plane4);
+                // var helper4 = new THREE.PlaneHelper(plane4, 6, 0xffff00);
+                // scene.add(helper4);
+                // console.log(plane4);
 
-
+                // more like pyramid than frustum. Two planes are missing to be frustum
                 let frustum = new CustomFrustum(plane1, plane2, plane3, plane4);
 
                 //add line to result

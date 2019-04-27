@@ -146,5 +146,4 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static', 'dist'),
 )
 
-# STATIC_URL = '/static/'
 

@@ -12,18 +12,10 @@
   },
   "dependencies": {
     "aframe": "^0.7.1",
-    "aframe-animation-component": "^5.1.2",
-    "aframe-bmfont-text-component": "^0.1.4",
-    "aframe-event-set-component": "^3.0.3",
-    "aframe-particle-system-component": "^1.1.3",
     "aframe-react": "^4.4.0",
     "dat.gui": "^0.7.2",
     "preact": "^8.1.0",
-    "react": "^16.4.1",
-    "react-dat-gui": "^1.0.2",
-    "react-dom": "^16.4.1",
-    "three": "^0.90.0",
-    "three-dragcontrols": "^0.88.2"
+    "react": "^16.4.1"
   },
   "devDependencies": {
     "auto-reload-brunch": "^2",
@@ -33,8 +25,7 @@
     "brunch": "^2",
     "clean-css-brunch": "^2",
     "ghpages": "0.0.3",
-    "uglify-js-brunch": "^2",
-    "webpack-bundle-tracker": "^0.3.0"
+    "uglify-js-brunch": "^2"
   },
   "plugins": [
     [

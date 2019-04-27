@@ -2,8 +2,7 @@
 exports.files = {
     javascripts: {
         joinTo: {
-            'vendor.js': /^(?!js)/,
-            'app.js': /^js/
+            'vendor.js': /\.js$/,
         }
     },
     stylesheets: {
@@ -27,14 +26,3 @@ exports.plugins = {
 exports.paths = {
     public: '../dist'
 }
-//
-// exports.config ={
-// paths:
-//     public: '../dist'
-// files:
-//     javascripts:
-//         joinTo: 'javascripts/app.js'
-// stylesheets:
-//     joinTo: 'stylesheets/app.css'
-// templates:
-//     joinTo: 'javascripts/app.js'

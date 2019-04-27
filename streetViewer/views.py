@@ -32,7 +32,7 @@ def storeImageData(request):
     global pathForImages
     # check getting value from dictionary
     for one in dictOfImages:
-        filename = pathForImages + one["key"]+ "_take_" + str(globalCounter)+".png"
+        filename = pathForImages + one["key"] + ".png"
         imgData = base64.b64decode( one["value"].partition(",")[2])
         with open(filename,'wb') as f:
             f.write(imgData)

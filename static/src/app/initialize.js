@@ -40,37 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    render(<LidarPoints stepNumber={0}/>, document.querySelector('#lidarPoints'));
+    render(<LidarPoints stepNumber={0} maxStepNumber={220}/>, document.querySelector('#lidarPoints'));
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const dat = require('dat.gui');
-    const gui = new dat.GUI();
-    let variable = new guiFunction();
     scene = document.querySelector('a-scene');
     setUpScene();
-    // var drawingCanvas = document.getElementById('drawingCanvas');
     var customDrawing = new CustomDrawing();
     window.addEventListener('resize', function () {
         document.getElementById("drawingCanvasDiv").innerHTML = '';
         customDrawing = new CustomDrawing();
     });
-
-
-    let stepNumber = gui.add(variable, 'stepNumber').min(0).max(220).step(1);
-
-    stepNumber.onChange(function (value) {
-        if (value === lastStepNumber) {
-            return;
-        }
-        lastStepNumber = value;
-        render(<LidarPoints stepNumber={value}/>, document.querySelector('#lidarPoints'));
-
-    });
-
-    let customContainer = document.querySelector('#my-gui-container');
-    if (customContainer != null) customContainer.appendChild(gui.domElement);
-
 
     window.onkeydown = function (e) {
         if (!e) e = window.event;
@@ -159,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
-        camera.position.set(0, 0, 0);
+        camera.position.set(0, 0.4, 0);
         camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
         groupOfCameras.add(camera);
         additionalCamerasObjects.push(camera);
@@ -191,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rectShape.lineTo(0, 0);
         rectShape.lineTo(0, yLength);
 
-        let geometry = rectShape.createPointsGeometry();
+        let geometry = new THREE.ShapeBufferGeometry(rectShape);
         return new THREE.Line(geometry, material);
     }
 
@@ -215,19 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let vNow = new THREE.Vector3(x, y, 0);
         vNow.unproject(mainCamera);
 
-        // return vNow.setLength(3);
         let length = Math.sqrt(vNow.x ** 2 + (vNow.y - cameraYOffset) ** 2 + vNow.z ** 2);
         let scalingFactor = 3 / Math.abs(length);
         return new THREE.Vector3((scalingFactor * vNow.x), ((scalingFactor * (vNow.y - cameraYOffset)) + cameraYOffset), (scalingFactor * vNow.z));
-        // // return {x:(scalingFactor * vNow.x),y: (scalingFactor * (vNow.y - 1.6) + 1.6),z: (scalingFactor * vNow.z)};
     }
 });
-
-var guiFunction = function () {
-    this.stepNumber = 0;
-};
-
-
 
 
 

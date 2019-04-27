@@ -23,12 +23,13 @@ class basicScene extends Component {
                 {/*<a-entity material="src: '/static/dist/img/360IMGStreet.jpg'; side: back; shader: flat"*/}
                 {/*geometry="primitive: sphere; radius: 5000; segmentsWidth: 64; segmentsHeight: 32">*/}
                 {/*</a-entity>*/}
-                <Entity
-                    primitive="a-sphere"
-                    src="/static/dist/img/360IMGStreet.jpg"
-                    material={{side: 'back', shader: 'flat'}}
-                    geometry={{radius: 5000, segmentsWidth: 64, segmentsHeight: 32}}
-                />
+                {/*<Entity*/}
+                {/*id={'pictureSphere'}*/}
+                {/*primitive="a-sphere"*/}
+                {/*src="/static/dist/img/360IMGStreet.jpg"*/}
+                {/*material={{side: 'back', shader: 'flat'}}*/}
+                {/*geometry={{radius: 90, segmentsWidth: 64, segmentsHeight: 32}}*/}
+                {/*/>*/}
                 <Entity primitive="a-camera"
                         camera="active: true"
                         look-controls

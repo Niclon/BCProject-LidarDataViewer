@@ -37,8 +37,6 @@ var material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 2});
 
 document.addEventListener('DOMContentLoaded', () => {
     render(<Main/>, document.querySelector('#app'));
-    window.CustomDragControls = CustomDragControls;
-
 });
 
 document.addEventListener('DOMContentLoaded', () => {

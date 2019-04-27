@@ -12,17 +12,8 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
     var _offset = new THREE.Vector3();
     var _intersection = new THREE.Vector3();
 
-    var _rotationMatrix = new THREE.Matrix3();
-    var _worldStartingDirection = new THREE.Vector3(0, 0, -1);
 
     var _selected = null, _hovered = null;
-
-    //todo delete
-    var geometry = new THREE.SphereGeometry(0.05, 32, 32);
-    var material = new THREE.MeshBasicMaterial({color: 0xff0000});
-    var sphere = new THREE.Mesh(geometry, material);
-    sphere.position.set(0, 0, 0);
-    document.querySelector('a-scene').object3D.add(sphere);
 
     var scope = this;
 
@@ -72,13 +63,9 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
             if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
 
                 _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
-                // _selected.position.copy(_intersection);
                 _worldRotation = _camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
 
-                // todo remove
-                let temp = _intersection;
-                sphere.position.set(temp.x, temp.y, temp.z);
 
             }
 
@@ -182,11 +169,6 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
                 _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
                 _worldRotation = _camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
-
-                //todo delete
-                let temp = _intersection;
-                sphere.position.set(temp.x, temp.y, temp.z);
-
             }
 
             scope.dispatchEvent({type: 'drag', object: _selected});
@@ -235,11 +217,9 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
         event.preventDefault();
 
         if (_selected) {
-            //todo create camera positioning here
-            // _selected.userData.worldRotation = _camera.getWorldRotation();
-            // _selected
+
             setUpCameraToLookAtMiddleOfSelection();
-            
+
             scope.dispatchEvent({type: 'dragend', object: _selected});
 
             _selected = null;
@@ -252,26 +232,10 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
 
     function setUpCameraToLookAtMiddleOfSelection() {
         let positionOfRotationCenter = _selected.position.clone();
-        let angleOfRotationInRad = _worldStartingDirection.angleTo(positionOfRotationCenter.clone().setY(0));
-
-        // because angleTo calculate smaller one
-        // and is rotated to the further from us and to left
-        // on positive X selection (right side) we need vector to rotate to right in front of us so it would be in the middle of selection
-        if (positionOfRotationCenter.x > 0) {
-            angleOfRotationInRad = -angleOfRotationInRad;
-        }
-        // rotation matrix around Y axis
-        _rotationMatrix.set(
-            Math.cos(angleOfRotationInRad), 0, Math.sin(angleOfRotationInRad),
-            0, 1, 0,
-            -Math.sin(angleOfRotationInRad), 0, Math.cos(angleOfRotationInRad)
-        );
         let vectorToWantedCenter = new THREE.Vector3(_selected.userData.xLength / 2, _selected.userData.yLength / 2, 0);
-        vectorToWantedCenter.applyMatrix3(_rotationMatrix);
+        vectorToWantedCenter.applyEuler(_selected.rotation.clone());
         positionOfRotationCenter.add(vectorToWantedCenter);
         _selected.userData.camera.lookAt(positionOfRotationCenter);
-
-        sphere.position.set(positionOfRotationCenter.x, positionOfRotationCenter.y, positionOfRotationCenter.z);
     }
 
     activate();
@@ -284,33 +248,17 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
     this.deactivate = deactivate;
     this.dispose = dispose;
 
-    // Backward compatibility
-
-    this.setObjects = function () {
-
-        console.error('THREE.DragControls: setObjects() has been removed.');
-
-    };
 
     this.on = function (type, listener) {
-
-        console.warn('THREE.DragControls: on() has been deprecated. Use addEventListener() instead.');
         scope.addEventListener(type, listener);
-
     };
 
     this.off = function (type, listener) {
-
-        console.warn('THREE.DragControls: off() has been deprecated. Use removeEventListener() instead.');
         scope.removeEventListener(type, listener);
-
     };
 
     this.notify = function (type) {
-
-        console.error('THREE.DragControls: notify() has been deprecated. Use dispatchEvent() instead.');
         scope.dispatchEvent({type: type});
-
     };
 
 };

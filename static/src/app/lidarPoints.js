@@ -167,6 +167,8 @@ class lidarPoints extends Component {
                         continue;
                     }
                     let sphere = new THREE.Mesh(geometry, material);
+                    sphere.dynamic = true;
+                    sphere.verticesNeedUpdate = true;
                     sphere.position.set(value.x, value.y, value.z);
                     spheres.add(sphere);
                 }
@@ -190,11 +192,12 @@ class lidarPoints extends Component {
 
     create3DLineBorder(xLength, yLength) {
         var rectShape = new THREE.Shape();
-        rectShape.moveTo(0, yLength);
-        rectShape.lineTo(xLength, yLength);
-        rectShape.lineTo(xLength, 0);
-        rectShape.lineTo(0, 0);
-        rectShape.lineTo(0, yLength);
+        rectShape.moveTo(-xLength / 2, yLength / 2);
+        rectShape.lineTo(xLength / 2, yLength / 2);
+        rectShape.lineTo(xLength / 2, -yLength / 2);
+        rectShape.lineTo(-xLength / 2, -yLength / 2);
+        rectShape.lineTo(-xLength / 2, yLength / 2);
+        rectShape.moveTo(0, 0);
 
         let geometry = new THREE.ShapeBufferGeometry(rectShape);
         let material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 2});
@@ -237,35 +240,77 @@ class lidarPoints extends Component {
             let index = 0;
             lines.children.forEach(function (line) {
 
-                vec1 = line.position.clone();
-                vec2 = vec1.clone();
-                vec2.y += line.userData.yLength;
+                //left
+                vec1 = that.rotateVectorAndReturnPosition(new THREE.Vector3(-line.userData.xLength / 2, line.userData.yLength / 2, 0), line);
+                vec2 = that.rotateVectorAndReturnPosition(new THREE.Vector3(-line.userData.xLength / 2, -line.userData.yLength / 2, 0), line);
                 vec3 = cameraPosition.clone();
                 plane1 = new THREE.Plane();
                 plane1.setFromCoplanarPoints(vec1, vec2, vec3);
                 let rotationMatrix = that.createRotationMatrix4AroudYAxis(Math.PI);
                 plane1.applyMatrix4(rotationMatrix);
+                plane1.normal.negate();
+                //
+                // var helper = new THREE.PlaneHelper( plane1, 6, 0xffff00 );
+                // scene.add(helper);
 
-
-                vec4 = line.position.clone();
-                vec5 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength, 0, 0), line);
+                //bottom
+                vec4 = vec2.clone();
+                vec5 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength / 2, -line.userData.yLength / 2, 0), line);
                 vec6 = cameraPosition.clone();
                 plane2 = new THREE.Plane();
                 plane2.setFromCoplanarPoints(vec4, vec5, vec6);
 
+                // var helper1 = new THREE.PlaneHelper( plane2, 6, 0xffff00 );
+                // scene.add(helper1);
+
+                //right
                 vec7 = vec5.clone();
-                vec8 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength, line.userData.yLength, 0), line);
+                vec8 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength / 2, line.userData.yLength / 2, 0), line);
                 vec9 = cameraPosition.clone();
                 plane3 = new THREE.Plane();
                 plane3.setFromCoplanarPoints(vec7, vec8, vec9);
+                // var helper2 = new THREE.PlaneHelper( plane3, 6, 0xffff00 );
+                // scene.add(helper2);
 
-                vec10 = line.position.clone();
-                vec10.y += line.userData.yLength;
+                //top
+                vec10 = vec1.clone();
                 vec11 = vec8.clone();
                 vec12 = cameraPosition.clone();
                 plane4 = new THREE.Plane();
                 plane4.setFromCoplanarPoints(vec10, vec11, vec12);
                 plane4.normal.negate();
+                // var helper3 = new THREE.PlaneHelper( plane4, 6, 0xffff00 );
+                // scene.add(helper3);
+
+                //  vec1 = line.position.clone();
+                // vec2 = vec1.clone();
+                // vec2.y += line.userData.yLength;
+                // vec3 = cameraPosition.clone();
+                // plane1 = new THREE.Plane();
+                // plane1.setFromCoplanarPoints(vec1, vec2, vec3);
+                // let rotationMatrix = that.createRotationMatrix4AroudYAxis(Math.PI);
+                // plane1.applyMatrix4(rotationMatrix);
+                //
+                //
+                // vec4 = line.position.clone();
+                // vec5 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength, 0, 0), line);
+                // vec6 = cameraPosition.clone();
+                // plane2 = new THREE.Plane();
+                // plane2.setFromCoplanarPoints(vec4, vec5, vec6);
+                //
+                // vec7 = vec5.clone();
+                // vec8 = that.rotateVectorAndReturnPosition(new THREE.Vector3(line.userData.xLength, line.userData.yLength, 0), line);
+                // vec9 = cameraPosition.clone();
+                // plane3 = new THREE.Plane();
+                // plane3.setFromCoplanarPoints(vec7, vec8, vec9);
+                //
+                // vec10 = line.position.clone();
+                // vec10.y += line.userData.yLength;
+                // vec11 = vec8.clone();
+                // vec12 = cameraPosition.clone();
+                // plane4 = new THREE.Plane();
+                // plane4.setFromCoplanarPoints(vec10, vec11, vec12);
+                // plane4.normal.negate();
 
 
                 // more like pyramid than frustum. Two planes are missing to be frustum
@@ -315,6 +360,7 @@ class lidarPoints extends Component {
 
     render() {
         this.showLoadingModal();
+        this.hideLoadingModal();
         this.removeSpheres();
         //callback to take picture of selection
         this.makeBackroundIMG();

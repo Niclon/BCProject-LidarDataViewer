@@ -19,6 +19,8 @@ class CustomSelection {
         this.material = new THREE.LineBasicMaterial({color: 0xff00ff, linewidth: 3});
         this.groupOfCameras = props.groupOfCameras;
         this.groupOfLines = props.groupOfLines;
+        this.rotationMatrix = new THREE.Matrix3();
+        this.worldStartingDirection = new THREE.Vector3(0, 0, -1);
 
 
         this.currentMouse2DForDeletion = {x: null, y: null};
@@ -64,6 +66,7 @@ class CustomSelection {
             if (e.which === 77) {
                 if (that.dragControls) {
                     if (that.isDraggingControlEnabled) {
+                        that.dragControls.setCursorToAuto();
                         that.dragControls.deactivate();
                         that.isDraggingControlEnabled = false;
                     } else {
@@ -97,8 +100,10 @@ class CustomSelection {
             var intersects = that.raycaster.intersectObjects(that.lineObjects);
             if (intersects.length > 0) {
                 let selection = intersects[0].object;
-                selection.userData.camera.parent.remove(selection.userData.camera);
-                selection.parent.remove(selection);
+                if (selection.userData.camera.parent) {
+                    selection.userData.camera.parent.remove(selection.userData.camera);
+                    selection.parent.remove(selection);
+                }
             }
         });
     }
@@ -108,7 +113,6 @@ class CustomSelection {
         this.scene = document.querySelector('a-scene');
         this.renderer = this.scene.renderer;
         this.mainCamera = this.scene.camera;
-        let worldRotation = this.mainCamera.getWorldRotation();
 
         let firstPoint;
         let secondPoint;
@@ -133,21 +137,53 @@ class CustomSelection {
         // xLength = firstPoint.distanceTo(new THREE.Vector3(secondPoint.x, firstPoint.y, secondPoint.z));
 
 
+        let line = this.create3DLine(xLength, yLength);
+        let reultVec = firstPoint.clone().add(secondPoint).divideScalar(2).setLength(3);
+
         let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
         camera.position.set(0, 0.4, 0);
-        camera.lookAt(new THREE.Vector3((firstPoint.x + secondPoint.x) / 2, (firstPoint.y + secondPoint.y) / 2, (firstPoint.z + secondPoint.z) / 2));
+        camera.lookAt(reultVec);
         this.groupOfCameras.add(camera);
         this.additionalCamerasObjects.push(camera);
+        let worldRotation = camera.getWorldRotation();
 
-        let line = this.create3DLine(xLength, yLength);
+
+        line.position.set(reultVec.x, reultVec.y, reultVec.z);
         line.rotation.set(worldRotation._x, worldRotation._y, worldRotation._z);
-        line.position.set(firstPoint.x, firstPoint.y, firstPoint.z);
+        //
+        // let angleOfYRotationInRad = this.worldStartingDirection.angleTo(line.position.clone().setY(0));
+        // let angleOfXRotationInRad = this.worldStartingDirection.angleTo(line.position.clone().setX(0));
+        //
+        // if (line.position.x > 0) {
+        //     angleOfYRotationInRad = -angleOfYRotationInRad;
+        // }
+        // if (line.position.z < 0) {
+        //     angleOfXRotationInRad = -angleOfXRotationInRad;
+        // }
+        // if (line.position.y > 0.4) {
+        //     angleOfXRotationInRad = -angleOfXRotationInRad;
+        // }
+        // line.rotateY(angleOfYRotationInRad);
+        // line.rotateX(angleOfXRotationInRad);
+
+
+        // line.rotation._y= angleOfYRotationInRad;
+        // line.rotation._x= angleOfXRotationInRad;
+        //todo delete
+        var geometry = new THREE.SphereBufferGeometry(0.1, 32, 32);
+        var material = new THREE.MeshBasicMaterial({color: 0xffff00});
+        var sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(reultVec.x, reultVec.y, reultVec.z);
+        this.scene.object3D.add(sphere);
+
+
         line.renderOrder = 1;
         line.userData = {
             camera: camera,
             xLength: xLength,
             yLength: yLength,
-            name: '_Selection_' + this.selectionCounter
+            name: '_Selection_' + this.selectionCounter,
+            rotation: line.rotation
         };
         this.selectionCounter += 1;
         this.groupOfLines.add(line);
@@ -165,11 +201,17 @@ class CustomSelection {
 
     create3DLine(xLength, yLength) {
         var rectShape = new THREE.Shape();
-        rectShape.moveTo(0, yLength);
-        rectShape.lineTo(xLength, yLength);
-        rectShape.lineTo(xLength, 0);
-        rectShape.lineTo(0, 0);
-        rectShape.lineTo(0, yLength);
+        // rectShape.moveTo(0, yLength);
+        // rectShape.lineTo(xLength, yLength);
+        // rectShape.lineTo(xLength, 0);
+        // rectShape.lineTo(0, 0);
+        // rectShape.lineTo(0, yLength);
+        rectShape.moveTo(-xLength / 2, yLength / 2);
+        rectShape.lineTo(xLength / 2, yLength / 2);
+        rectShape.lineTo(xLength / 2, -yLength / 2);
+        rectShape.lineTo(-xLength / 2, -yLength / 2);
+        rectShape.lineTo(-xLength / 2, yLength / 2);
+        rectShape.moveTo(0, 0);
 
         let geometry = new THREE.ShapeBufferGeometry(rectShape);
         return new THREE.Line(geometry, this.material);

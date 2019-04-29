@@ -38,7 +38,7 @@
     <option loopfunc="false" />
     <option maxerr="50" />
     <option mocha="false" />
-    <option module="false" />
+    <option module="true" />
     <option mootools="false" />
     <option moz="false" />
     <option multistr="false" />

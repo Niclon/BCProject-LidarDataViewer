@@ -31,7 +31,7 @@ urlpatterns = [
     url(r'^SelectedData/$', views.storeResultData, name='SelectedData'),
     url(r'^replay/$', views.replay, name='replayPage'),
     url(r'^docs/$', views.docs, name='documentationPage'),
+    url(r'^api/getAllDataOfSelections$', views.downloadSelectionsAndImageData, name='Download'),
     url(r'^$', index),
-
 
 ]

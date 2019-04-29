@@ -1,13 +1,15 @@
 import base64
 import json
 import os
+import zipfile
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.utils.encoding import smart_str
 
 globalCounter = 0
 pathForImages = "datastorage/imagesOfCameras/"
@@ -19,7 +21,7 @@ fileNameSelectionPrefix = 'Selection_'
 
 
 def index(request):
-    return render(request,"index.html")
+    return render(request, "index.html")
 
 
 def replay(request):
@@ -29,19 +31,36 @@ def replay(request):
 def docs(request):
     return render(request, "docs.html")
 
+
+def downloadSelectionsAndImageData(request):
+    file_name = 'DataToDownload.zip'
+    zipf = zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED)
+    zipdir('datastorage/imagesOfCameras', zipf)
+    zipdir('datastorage/selection', zipf)
+    zipf.close()
+    my_file = open(file_name, 'rb').read()
+    return HttpResponse(my_file, content_type="application\zip")
+
+
+def zipdir(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file))
+
 @csrf_exempt
 def storeImageData(request):
-    dictOfImages =json.loads(request.body)
+    dictOfImages = json.loads(request.body)
     global globalCounter
     global pathForImages
     # check getting value from dictionary
     for one in dictOfImages:
         filename = pathForImages + one["key"] + ".png"
-        imgData = base64.b64decode( one["value"].partition(",")[2])
-        with open(filename,'wb') as f:
+        imgData = base64.b64decode(one["value"].partition(",")[2])
+        with open(filename, 'wb') as f:
             f.write(imgData)
     # globalCounter+=1
-    return JsonResponse({"success":"true"})
+    return JsonResponse({"success": "true"})
 
 
 @csrf_exempt
@@ -57,7 +76,6 @@ def storeResultData(request):
     return JsonResponse({"success": "true"})
 
 
-
 @api_view(["GET"])
 @csrf_exempt
 def dataStored(request, fileId):
@@ -69,7 +87,7 @@ def dataStored(request, fileId):
             resp['Access-Control-Allow-Origin'] = '*'
             return resp
     except ValueError as e:
-        return Response(e.args[0],status.HTTP_400_BAD_REQUEST)
+        return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])

@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^Images/$', views.storeImageData, name='Images'),
     url(r'^SelectedData/$', views.storeResultData, name='SelectedData'),
     url(r'^replay/$', views.replay, name='replayPage'),
+    url(r'^docs/$', views.docs, name='documentationPage'),
     url(r'^$', index),
 
 

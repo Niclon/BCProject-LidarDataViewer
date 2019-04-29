@@ -1,5 +1,4 @@
 import {Component, h, render} from 'preact'
-import 'react'
 import {CustomFrustum} from "./customFrustum";
 
 var THREE = require('three');
@@ -62,8 +61,7 @@ class lidarPoints extends Component {
         photoSphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
         let sphereMaterial = new THREE.MeshBasicMaterial();
         let texHolder = new THREE.TextureLoader();
-        // sphereMaterial.map = texHolder.load('static/dist/img/360IMGStreet.jpg');
-        // sphereMaterial.map = THREE.ImageUtils.loadTexture('img/360IMGStreet.jpg');
+
 
         let that = this;
         texHolder.load('static/dist/img/360IMGStreet.jpg', (texture) => {
@@ -73,13 +71,6 @@ class lidarPoints extends Component {
             scene.add(sphereMesh);
             that.takePicturesfromCameras();
         });
-        // let sphereMesh = new THREE.Mesh(photoSphere, sphereMaterial);
-        // sphereMesh.name = "Background";
-        // scene.add(sphereMesh);
-        //
-        // let scene = document.querySelector('a-scene');
-        //
-        // console.log(this.state.images[this.state.stepNumber % this.state.images.length]);
         // scene.children[1].setAttribute('src', this.state.images[this.state.stepNumber % this.state.images.length]);
 
 
@@ -101,30 +92,6 @@ class lidarPoints extends Component {
                 this.createImageFromCameras(scene, renderer, groupOfCameras, groupOfLines);
             }
         }
-        // let bufferPicture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight,{
-        //     minFilter: THREE.NearestFilter,
-        //     magFilter: THREE.NearestFilter,
-        //     format: THREE.RGBAFormat
-        // });
-        // renderer.render(scene.object3D,groupOfCameras.children[0],bufferPicture,true);
-        // console.log(secCanvas);
-
-        // renderer.render(scene.object3D,groupOfCameras.children[0],secCanvas);
-
-
-        // var boxMaterial = new THREE.MeshBasicMaterial({map:bufferPicture});
-        // var boxGeometry2 = new THREE.BoxGeometry( 14, 8, 8 );
-        // var mainBoxObject = new THREE.Mesh(boxGeometry2,boxMaterial);
-
-        // mainBoxObject.position.set(0,0,-15);
-        // scene.object3D.add(mainBoxObject);
-
-
-        //this piece works
-        // renderer.render(scene.object3D,groupOfCameras.children[0]);
-        // var dataURL = renderer.domElement.toDataURL();
-        // console.log(dataURL);
-
     }
 
     createImageFromCameras(scene, renderer, groupOfCameras, groupOfLines) {
@@ -139,16 +106,6 @@ class lidarPoints extends Component {
                 value: dataURL
             });
         }
-
-        // for (let i = 0; i < groupOfCameras.children.length; i++) {
-        //     renderer.render(scene.object3D, groupOfCameras.children[i]);
-        //     let dataURL = renderer.domElement.toDataURL();
-        //     dataToSend.push({
-        //         key: 'Frame_' + that.state.stepNumber + i,
-        //         value: dataURL
-        //     });
-        //     // console.log(dataURL)
-        // }
         this.sendImagesToServer(JSON.stringify(dataToSend));
     }
 
@@ -168,11 +125,9 @@ class lidarPoints extends Component {
             request.open('GET', '/dataStored/' + this.state.stepNumber, true);  // `false` makes the request synchronous
         }
 
-
         request.setRequestHeader('Content-Type', 'application/json');
         request.onreadystatechange = function () {
             if (request.readyState === 4 && request.status === 200) {
-                console.log(request.response);
                 that.props.lidarPoints = JSON.parse(request.response);
                 that.renderPointsFromData();
                 that.hideLoadingModal();
@@ -196,15 +151,11 @@ class lidarPoints extends Component {
         geometry.verticesNeedUpdate = true;
         let material = new THREE.MeshLambertMaterial({color: 0x39ff14});
 
-        // let spheres = new THREE.Group();
-        // spheres.name = "Spheres";
-
         let that = this;
         let thatPoints = this.props.lidarPoints;
         if (that.state.isReplay) {
             thatPoints = JSON.parse(thatPoints);
         }
-        // console.log(thatPoints);
 
         for (let index in thatPoints) {
             if (that.state.isReplay) {
@@ -226,48 +177,6 @@ class lidarPoints extends Component {
             sphere.position.set(value[0], value[2], -value[1]);
             spheres.add(sphere);
         }
-
-        // Object.keys(this.state.lidarPoints).forEach(function (key) {
-        //     //for replay only
-        //     if (that.state.isReplay) {
-        //         // let innerOne = thatPoints[key];
-        //         // Object.keys(innerOne).forEach(function (keyInner) {
-        //         //     if (keyInner.toLowerCase().indexOf("line") >= 0) {
-        //         //         console.log(keyInner);
-        //         //         that.createBorderAndRotate(innerOne[keyInner]);
-        //         //         return;
-        //         //     }
-        //         //     let value = innerOne[keyInner];
-        //         //     console.log(value);
-        //         //     let sphere = new THREE.Mesh(geometry, material);
-        //         //     sphere.position.set(value.x, value.y, value.z);
-        //         //     spheres.add(sphere);
-        //         // });
-        //         let value = thatPoints[key];
-        //         if (key.toLowerCase().indexOf("line") >= 0) {
-        //             console.log(keyInner);
-        //             that.createBorderAndRotate(value);
-        //             return;
-        //         }
-        //         let sphere = new THREE.Mesh(geometry, material);
-        //         sphere.position.set(value.x, value.y, value.z);
-        //         spheres.add(sphere);
-        //         return;
-        //     }
-        //     let value = thatPoints[key];
-        //     let sphere = new THREE.Mesh(geometry, material);
-        //     sphere.position.set(value[0], value[2], -value[1]);
-        //     spheres.add(sphere);
-        // });
-        // this.state.spheres = spheres;
-        // this.state.lidarPoints.forEach(function (key, value) {
-        //     let sphere = new THREE.Mesh(geometry, material);
-        //     sphere.position.set(value[0], value[1] + camera.y, value[2]);
-        //     spheres.add(sphere);
-        // });
-
-
-        // scene.add(spheres);
     }
 
     createBorderAndRotate(line) {
@@ -378,13 +287,11 @@ class lidarPoints extends Component {
                     }
                 });
                 let name = 'LidarData_' + that.state.stepNumber + line.userData.name;
-                console.log(eachResult);
                 result[name] = eachResult;
 
             });
 
         }
-        console.log(result);
         return result;
 
     }
@@ -409,8 +316,9 @@ class lidarPoints extends Component {
     render() {
         this.showLoadingModal();
         this.removeSpheres();
+        //callback to take picture of selection
         this.makeBackroundIMG();
-        // this.takePicturesfromCameras();
+        //callbacks for rendering, frustum etc
         this.loadDataFromServerAndRenderPoints();
         return (null);
     }

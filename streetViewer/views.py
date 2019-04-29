@@ -25,6 +25,10 @@ def index(request):
 def replay(request):
     return render(request, "replay.html")
 
+
+def docs(request):
+    return render(request, "docs.html")
+
 @csrf_exempt
 def storeImageData(request):
     dictOfImages =json.loads(request.body)

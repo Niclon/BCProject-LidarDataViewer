@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> Help page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<body>
+<div class="container-fluid">
+    <h3 style="padding-bottom: 10px"> Welcome to Documentation / Help page</h3>
+    <h5 style="padding-bottom: 10px">Controls</h5>
+
+    <table class="table" style="padding-bottom: 15px">
+        <thead>
+        <tr>
+            <th scope="col">Short Cut</th>
+            <th scope="col">Funcionality</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                'ctrl'
+            </td>
+            <td>
+                Stop scene and invoke drawing to canvas on top of Three.js scene.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'shift'
+            </td>
+            <td>
+                Accept drawn selection and create selection to the Three.js scene.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'alt'
+            </td>
+            <td>
+                Throw away drawn selections and resume scene.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'ctrl + alt + i'
+            </td>
+            <td>
+                Open Aframe inspector window with orthographic camera.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'M'
+            </td>
+            <td>
+                Enable moving of selections.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'del'
+            </td>
+            <td>
+                Delete selection which my cursor point to. Works only if moving is enabled ('M') and scene is not
+                stopped('ctrl').
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h5 style="padding-bottom: 10px">Structure of frontend</h5>
+    <table class="table" style="padding-bottom: 10px">
+        <thead>
+        <tr>
+            <th scope="col">Javascript file</th>
+            <th scope="col">Funcionality</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                'initialize.js'
+            </td>
+            <td>
+                File for initialization of preact component(scene, camera) + selection funcionality(making selection
+                border inside scene).
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'initializeLoad.js'
+            </td>
+            <td>
+                File for initialization of components for replay funcionality.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'lidarPoints.js'
+            </td>
+            <td>
+                Preact component for getting points from server, rendering points into scene, changing spherical
+                picture, taking pictures of selections and sending them to server, creating custom frustum to get all
+                point inside selections and sending them to server too. Plus funcionality for replay. Initialization of
+                component count with parameters 'stepNumber' current frame, 'maxStepNumber' maximal number of
+                frames(this is here for intialization of slider GUI for frame selection) and 'isReplay' if it is replay
+                or not;
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'main.js'
+            </td>
+            <td>
+                Preact component which creates scene camera light.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'customDrawing.js'
+            </td>
+            <td>
+                Component which create its own canvas for drawing in real time without projecting drawing into scene.
+                This component have its own events.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'customFrustum.js'
+            </td>
+            <td>
+                File for storing 4 planes and having public method if point is contained in frustum. Used for deciding
+                if point should be returned on backend or not.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                'customDragControls.js'
+            </td>
+            <td>
+                File for dragging selections around main camera using method of ray tracing to get selection.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                'customSelection.js'
+            </td>
+            <td>
+                File for creating selections and creating instances of customDragControls.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+</div>
+
+
+</body>
+</html>

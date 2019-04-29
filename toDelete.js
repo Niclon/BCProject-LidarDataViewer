@@ -1,19 +1,10 @@
-import {CustomFrustum} from "./static/src/app/customFrustum";
+if (_selected) {
+    let positionOfRotationCenter = _selected.position.clone();
+    let vectorToWantedCenter = new THREE.Vector3(_selected.userData.xLength / 2, _selected.userData.yLength / 2, 0);
+    vectorToWantedCenter.applyEuler(_selected.rotation.clone());
+    positionOfRotationCenter.add(vectorToWantedCenter);
+    _selected.userData.camera.lookAt(positionOfRotationCenter);
 
-let frustum = new CustomFrustum(plane1, plane2, plane3, plane4);
+    _selected = null;
 
-//add line to result
-let lineForRecreation = {
-    position: line.position,
-    rotationEuler: line.rotation,
-    xLength: line.userData.xLength,
-    yLength: line.userData.yLength
-};
-let eachResult = {};
-eachResult.line = lineForRecreation;
-spheres.children.forEach(function (sphere) {
-    if (frustum.containsPoint(sphere.position)) {
-        eachResult[index] = sphere.position;
-        index++;
-    }
-});
+}

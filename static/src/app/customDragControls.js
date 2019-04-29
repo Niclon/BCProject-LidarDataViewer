@@ -66,7 +66,6 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
                 _worldRotation = _camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
 
-
             }
 
             scope.dispatchEvent({type: 'drag', object: _selected});

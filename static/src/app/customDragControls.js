@@ -11,8 +11,6 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
     var _mouse = new THREE.Vector2();
     var _offset = new THREE.Vector3();
     var _intersection = new THREE.Vector3();
-    var _worldStartingDirection = new THREE.Vector3(0, 0, -1);
-
 
     var _selected = null, _hovered = null;
 
@@ -67,22 +65,6 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
                 _selected.userData.camera.lookAt(_selected.position);
                 _worldRotation = _selected.userData.camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
-                // _selected.rotation.set(0, 0, 0);
-                // let angleOfYRotationInRad =_worldStartingDirection.angleTo(_selected.position.clone().setY(0));
-                // let angleOfXRotationInRad = _worldStartingDirection.angleTo(_selected.position.clone().setX(0));
-                //
-                // if (_selected.position.x > 0) {
-                //     angleOfYRotationInRad = -angleOfYRotationInRad;
-                // }
-                // if (_selected.position.z < 0) {
-                //     angleOfXRotationInRad = -angleOfXRotationInRad;
-                // }
-                // if (_selected.position.y > 0.4) {
-                //     angleOfXRotationInRad = -angleOfXRotationInRad;
-                // }
-                // _selected.rotateY(angleOfYRotationInRad);
-                // _selected.rotateX(angleOfXRotationInRad);
-                // console.log(angleOfXRotationInRad);
 
             }
 
@@ -108,6 +90,7 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
                 _hovered = object;
 
             }
+            _domElement.style.cursor = 'pointer';
 
         } else {
 
@@ -184,26 +167,9 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
 
             if (_raycaster.ray.intersectSphere(_sphere, _intersection)) {
                 _selected.position.copy(_intersection.sub(_offset)).setLength(_radius);
-                // _worldRotation = _camera.getWorldRotation();
-                // _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
                 _selected.userData.camera.lookAt(_selected.position);
                 _worldRotation = _selected.userData.camera.getWorldRotation();
                 _selected.rotation.set(_worldRotation._x, _worldRotation._y, _worldRotation._z);
-                // _selected.rotation.set(0, 0, 0);
-                // let angleOfYRotationInRad =_worldStartingDirection.angleTo(_selected.position.clone().setY(0));
-                // let angleOfXRotationInRad = _worldStartingDirection.angleTo(_selected.position.clone().setX(0));
-                //
-                // if (_selected.position.x > 0) {
-                //     angleOfYRotationInRad = -angleOfYRotationInRad;
-                // }
-                // if (_selected.position.z < 0) {
-                //     // angleOfXRotationInRad = -angleOfXRotationInRad;
-                // }
-                // if (_selected.position.y > 0.4) {
-                //     angleOfXRotationInRad = -angleOfXRotationInRad;
-                // }
-                // _selected.rotateY(angleOfYRotationInRad);
-                // _selected.rotateX(angleOfXRotationInRad);
             }
 
             scope.dispatchEvent({type: 'drag', object: _selected});
@@ -266,10 +232,6 @@ var CustomDragControls = function (_objects, _camera, _domElement) {
     }
 
     function setUpCameraToLookAtMiddleOfSelection() {
-        // let positionOfRotationCenter = _selected.position.clone();
-        // let vectorToWantedCenter = new THREE.Vector3(_selected.userData.xLength / 2, _selected.userData.yLength / 2, 0);
-        // vectorToWantedCenter.applyEuler(_selected.rotation.clone());
-        // positionOfRotationCenter.add(vectorToWantedCenter);
         _selected.userData.camera.lookAt(_selected.position);
     }
 

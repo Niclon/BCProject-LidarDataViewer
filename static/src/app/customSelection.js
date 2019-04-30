@@ -1,4 +1,5 @@
 import CustomDragControls from "./customDragControls";
+import CustomSelectionResizer from "./customSelectionResizer";
 
 class CustomSelection {
     constructor(props) {
@@ -26,6 +27,11 @@ class CustomSelection {
         this.currentMouse2DForDeletion = {x: null, y: null};
         this.deletionEvent = new MouseEvent("tryToDeleteSelectionEvent");
         this.customDrawing = props.customDrawing;
+        this.customSelectionResizer = new CustomSelectionResizer(
+            {
+                customSelection: this
+            }
+        );
         this.initEvents();
     }
 
@@ -82,6 +88,16 @@ class CustomSelection {
                         document.dispatchEvent(that.deletionEvent);
                     } else {
                         console.log("To delete selection please enable dragging (press key 'M')");
+                    }
+                }
+            }
+            //for resizing key 'N'
+            if (e.which === 78) {
+                if (that.customSelectionResizer) {
+                    if (that.customSelectionResizer.enabled && false === that.isFrameStopped) {
+                        that.customSelectionResizer.disable();
+                    } else {
+                        that.customSelectionResizer.enable();
                     }
                 }
             }
@@ -147,35 +163,8 @@ class CustomSelection {
         this.additionalCamerasObjects.push(camera);
         let worldRotation = camera.getWorldRotation();
 
-
         line.position.set(reultVec.x, reultVec.y, reultVec.z);
         line.rotation.set(worldRotation._x, worldRotation._y, worldRotation._z);
-        //
-        // let angleOfYRotationInRad = this.worldStartingDirection.angleTo(line.position.clone().setY(0));
-        // let angleOfXRotationInRad = this.worldStartingDirection.angleTo(line.position.clone().setX(0));
-        //
-        // if (line.position.x > 0) {
-        //     angleOfYRotationInRad = -angleOfYRotationInRad;
-        // }
-        // if (line.position.z < 0) {
-        //     angleOfXRotationInRad = -angleOfXRotationInRad;
-        // }
-        // if (line.position.y > 0.4) {
-        //     angleOfXRotationInRad = -angleOfXRotationInRad;
-        // }
-        // line.rotateY(angleOfYRotationInRad);
-        // line.rotateX(angleOfXRotationInRad);
-
-
-        // line.rotation._y= angleOfYRotationInRad;
-        // line.rotation._x= angleOfXRotationInRad;
-        //todo delete
-        var geometry = new THREE.SphereBufferGeometry(0.1, 32, 32);
-        var material = new THREE.MeshBasicMaterial({color: 0xffff00});
-        var sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(reultVec.x, reultVec.y, reultVec.z);
-        this.scene.object3D.add(sphere);
-
 
         line.renderOrder = 1;
         line.userData = {
@@ -200,12 +189,13 @@ class CustomSelection {
     }
 
     create3DLine(xLength, yLength) {
+
+        return new THREE.Line(this.createLineGeometry(xLength, yLength), this.material);
+    }
+
+    createLineGeometry(xLength, yLength) {
         var rectShape = new THREE.Shape();
-        // rectShape.moveTo(0, yLength);
-        // rectShape.lineTo(xLength, yLength);
-        // rectShape.lineTo(xLength, 0);
-        // rectShape.lineTo(0, 0);
-        // rectShape.lineTo(0, yLength);
+
         rectShape.moveTo(-xLength / 2, yLength / 2);
         rectShape.lineTo(xLength / 2, yLength / 2);
         rectShape.lineTo(xLength / 2, -yLength / 2);
@@ -213,8 +203,7 @@ class CustomSelection {
         rectShape.lineTo(-xLength / 2, yLength / 2);
         rectShape.moveTo(0, 0);
 
-        let geometry = new THREE.ShapeBufferGeometry(rectShape);
-        return new THREE.Line(geometry, this.material);
+        return new THREE.ShapeBufferGeometry(rectShape);
     }
 
     createSecondPointFromPlane(screenX, screenY, firstpoint) {

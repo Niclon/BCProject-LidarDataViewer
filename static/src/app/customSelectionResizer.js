@@ -43,9 +43,11 @@ class CustomSelectionResizer {
                     that.vectorDiference = that.startOfDragging.clone().sub(that.currentPositionOfDragging);
 
                     if (that.selected.position.z < 0) {
+                        that.selected.geometry.dispose();
                         that.selected.geometry = that.customSelection.createLineGeometry(that.selected.userData.xLength + (-2) * that.vectorDiference.x,
                             that.selected.userData.yLength + 2 * that.vectorDiference.y);
                     } else {
+                        that.selected.geometry.dispose();
                         that.selected.geometry = that.customSelection.createLineGeometry(that.selected.userData.xLength + 2 * that.vectorDiference.x,
                             that.selected.userData.yLength + 2 * that.vectorDiference.y);
                     }

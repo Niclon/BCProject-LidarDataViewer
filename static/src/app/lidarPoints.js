@@ -42,11 +42,19 @@ class lidarPoints extends Component {
         let scenel = document.querySelector('a-scene').object3D;
         let selectedObject = scenel.getObjectByName("groupOfPoints");
         if (selectedObject) {
+            selectedObject.children.forEach(function (x) {
+                x.geometry.dispose();
+                x.material.dispose();
+            });
             selectedObject.children = [];
         }
         if (this.state.isReplay) {
             let lines = scenel.getObjectByName("groupOfLines");
             if (selectedObject) {
+                lines.children.forEach(function (x) {
+                    x.geometry.dispose();
+                    x.material.dispose();
+                });
                 lines.children = [];
             }
         }
@@ -54,8 +62,12 @@ class lidarPoints extends Component {
 
     makeBackroundIMG() {
         let scene = document.querySelector('a-scene').object3D;
-        if (scene.getObjectByName("Background")) {
-            scene.remove(scene.getObjectByName("Background"));
+        let bgSphere = scene.getObjectByName("Background");
+        if (bgSphere) {
+            scene.remove(bgSphere);
+            bgSphere.geometry.dispose();
+            bgSphere.material.dispose();
+            bgSphere = undefined;
         }
         let photoSphere = new THREE.SphereBufferGeometry(90, 32, 32);
         photoSphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));

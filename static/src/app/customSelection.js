@@ -119,6 +119,9 @@ class CustomSelection {
                 if (selection.userData.camera.parent) {
                     selection.userData.camera.parent.remove(selection.userData.camera);
                     selection.parent.remove(selection);
+                    selection.geometry.dispose();
+                    selection.material.dispose();
+                    selection = undefined;
                 }
             }
         });
